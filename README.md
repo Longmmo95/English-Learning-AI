@@ -73,6 +73,7 @@ python -m pytest -q
 - [x] Bài học A1 mẫu, từ vựng và mẫu câu.
 - [x] Nghe mẫu bằng Web Speech API của trình duyệt (giọng đọc phụ thuộc thiết bị/trình duyệt).
 - [x] Ôn tập câu hỏi cơ bản và lưu trạng thái bài học trên thiết bị.
+- [x] Thẻ ghi nhớ từ vựng: lật thẻ, đánh dấu đã nhớ/chưa nhớ và lưu tiến độ trên thiết bị.
 - [x] API FastAPI cơ bản và kiểm thử endpoint.
 - [ ] Tài khoản người học và đồng bộ tiến độ trên nhiều thiết bị.
 - [ ] Ghi âm giọng nói và chấm phát âm AI.
