@@ -51,3 +51,44 @@ def test_pronunciation_is_not_faked():
     assert result["available"] is False
     assert result["granularity"] == "word"
     assert "điểm số giả" in result["message"]
+
+
+
+def test_pronunciation_status_reports_optional_engine_state():
+    result = client.get("/api/v1/pronunciation/status")
+    assert result.status_code == 200
+    payload = result.json()
+    assert "available" in payload
+    assert payload["granularity"] in {"phoneme_and_word", "not_available"}
+
+
+def test_pronunciation_upload_returns_service_unavailable_without_engine(monkeypatch):
+    import app.main as main_module
+    from app.pronunciation import PronunciationEngineUnavailable
+
+    def unavailable(*args, **kwargs):
+        raise PronunciationEngineUnavailable("Engine missing")
+
+    monkeypatch.setattr(main_module, "analyze_recording", unavailable)
+    response = client.post(
+        "/api/v1/pronunciation/analyze",
+        files={"file": ("voice.webm", b"fake-audio", "audio/webm")},
+        data={"expected_text": "Hello"},
+    )
+    assert response.status_code == 503
+    assert "Engine missing" in response.json()["detail"]
+
+
+def test_pronunciation_upload_validates_bad_input(monkeypatch):
+    import app.main as main_module
+
+    def invalid(*args, **kwargs):
+        raise ValueError("Vui lòng chọn câu tiếng Anh cần luyện.")
+
+    monkeypatch.setattr(main_module, "analyze_recording", invalid)
+    response = client.post(
+        "/api/v1/pronunciation/analyze",
+        files={"file": ("voice.webm", b"fake-audio", "audio/webm")},
+        data={"expected_text": " "},
+    )
+    assert response.status_code == 422
