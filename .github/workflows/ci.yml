@@ -45,6 +45,9 @@ jobs:
           assert 'SpeechRecognition' in app or 'MediaRecorder' in app
           assert 'normalizeWords' in app
           assert 'MediaRecorder' in app
+          assert "recordingTimeout=setTimeout" in app
+          assert "window.stopSpeakingCapture" in app
+          assert "if(discardRecording)" in app
           assert '/api/v1/pronunciation/analyze' in app
           assert 'ela-pronunciation-api-url' in app
           assert 'ela-flashcards-known' in cards
