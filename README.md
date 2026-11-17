@@ -8,7 +8,7 @@ Website học tiếng Anh độc lập cho người Việt mới bắt đầu (A
 - Mọi thay đổi hiện được kiểm tra trên nhánh thử nghiệm; chưa tự động gộp vào \`main\`.
 
 ## Tính năng hiện có
-- [x] Trang tổng quan và lộ trình 3 bài học A1: chào hỏi, gia đình, công việc hằng ngày.
+- [x] Trang tổng quan và lộ trình 6 bài học A1: chào hỏi, gia đình, công việc hằng ngày, đồ ăn & thức uống, mua sắm, địa điểm & chỉ đường.
 - [x] Từ vựng, phiên âm IPA, mẫu câu song ngữ và đọc mẫu bằng Web Speech API.
 - [x] Thẻ ghi nhớ: lật thẻ, đánh dấu đã nhớ/chưa nhớ và lưu cục bộ.
 - [x] Luyện nói bằng nhận diện giọng nói có sẵn của trình duyệt; đối chiếu văn bản theo từng từ.
