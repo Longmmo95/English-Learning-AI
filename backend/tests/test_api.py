@@ -14,9 +14,9 @@ def test_list_lessons_contains_three_a1_lessons():
     response = client.get("/api/v1/lessons")
     assert response.status_code == 200
     payload = response.json()
-    assert payload["total"] == 3
+    assert payload["total"] == 6
     assert {item["id"] for item in payload["items"]} == {
-        "greetings", "family", "daily-routine"
+        "greetings", "family", "daily-routine", "food-drinks", "shopping", "places-directions"
     }
 
 
@@ -139,3 +139,13 @@ def test_cors_rejects_unlisted_origins():
         },
     )
     assert "access-control-allow-origin" not in response.headers
+
+
+def test_additional_a1_lessons_have_ten_words_and_five_phrases():
+    for lesson_id in ("food-drinks", "shopping", "places-directions"):
+        response = client.get(f"/api/v1/lessons/{lesson_id}")
+        assert response.status_code == 200
+        lesson = response.json()
+        assert lesson["level"] == "A1"
+        assert len(lesson["vocabulary"]) == 10
+        assert len(lesson["phrases"]) == 5
