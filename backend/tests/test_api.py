@@ -169,6 +169,14 @@ def test_engine_result_rejects_malformed_word_errors(differences):
         validate_engine_result({"score": 85.5, "differences": differences})
 
 
+def test_pronunciation_audio_duration_limit():
+    from app.pronunciation import validate_audio_duration
+
+    assert validate_audio_duration([0] * (16_000 * 30)) == 30
+    with pytest.raises(ValueError, match="30 giây"):
+        validate_audio_duration([0] * (16_000 * 31))
+
+
 def test_engine_result_preserves_a_real_numeric_score():
     from app.pronunciation import validate_engine_result
 
