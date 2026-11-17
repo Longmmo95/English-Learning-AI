@@ -35,7 +35,7 @@ GitHub Pages chỉ chạy giao diện tĩnh. Máy chấm âm thanh phải chạy
 
 ## Kết nối giao diện
 
-Trong trang Luyện nói, nhập URL HTTPS của backend và lưu. Sau đó ghi âm câu mẫu rồi gửi lên API. Trình duyệt yêu cầu HTTPS để dùng micro. Giới hạn tải lên 12 MB.
+Trong trang Luyện nói, nhập URL HTTPS của backend và lưu. Sau đó ghi âm câu mẫu rồi gửi lên API. Trình duyệt yêu cầu HTTPS để dùng micro. Giới hạn tải lên 12 MB và tối đa 30 giây mỗi bản ghi.
 
 ## Riêng tư và chi phí
 
@@ -43,7 +43,7 @@ Bản ghi âm được gửi đến backend do bạn tự quản lý; endpoint x
 
 ## Lưu ý chất lượng
 
-OpenPronounce công bố giới hạn nhận diện và khả năng báo nhầm; không nên xem điểm số là kết luận tuyệt đối. Chỉ chấm câu tiếng Anh ngắn, thu âm rõ, nói tự nhiên, không có tiếng ồn nền lớn.
+OpenPronounce công bố giới hạn nhận diện và khả năng báo nhầm; không nên xem điểm số là kết luận tuyệt đối. Chỉ chấm câu tiếng Anh ngắn (tối đa 30 giây), thu âm rõ, nói tự nhiên, không có tiếng ồn nền lớn.
 
 
 ## Chạy bằng Docker
