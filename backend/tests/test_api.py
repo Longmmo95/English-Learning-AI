@@ -216,3 +216,18 @@ def test_pronunciation_endpoint_rate_limits_repeated_requests(monkeypatch):
     finally:
         main_module._request_times.pop(limited_ip, None)
         limited_client.close()
+
+
+def test_pronunciation_upload_rejects_payload_over_12mb(monkeypatch):
+    import app.main as main_module
+
+    def should_not_run(*args, **kwargs):
+        raise AssertionError("Oversized uploads must be rejected before model analysis")
+
+    monkeypatch.setattr(main_module, "analyze_recording", should_not_run)
+    response = client.post(
+        "/api/v1/pronunciation/analyze",
+        files={"file": ("large.webm", b"x" * (main_module.MAX_AUDIO_BYTES + 1), "audio/webm")},
+        data={"expected_text": "Hello"},
+    )
+    assert response.status_code == 413
