@@ -16,7 +16,7 @@ os.environ.setdefault("OPENPRONOUNCE_TTS", "gtts")
 import spaces
 import gradio as gr
 
-from openpronounce import audio
+from openpronounce import audio, compare_audio_with_text
 from openpronounce.phones import _load_model as load_phone_model
 from openpronounce.speech import _load_models as load_word_model
 
@@ -53,11 +53,16 @@ def assess_pronunciation(audio_path: str | None, expected_text: str):
         duration = len(waveform) / SAMPLE_RATE
         if duration <= 0 or duration > MAX_AUDIO_SECONDS:
             raise ValueError(f"Bản ghi âm phải dài từ 0 đến {MAX_AUDIO_SECONDS} giây.")
-        result = __import__(
-            "openpronounce", fromlist=["compare_audio_with_text"]
-        ).compare_audio_with_text(waveform, expected_text, lang="en")
-        if not isinstance(result, dict) or "score" not in result:
-            raise RuntimeError("Engine không trả về kết quả chấm hợp lệ.")
+        result = compare_audio_with_text(waveform, expected_text, lang="en")
+        if not isinstance(result, dict):
+            raise RuntimeError("Engine không trả về kết quả dạng đối tượng.")
+        score = result.get("score")
+        differences = result.get("differences")
+        if isinstance(score, bool) or not isinstance(score, (int, float)) or not 0 <= score <= 100:
+            raise RuntimeError("Engine không trả về điểm số hợp lệ trong khoảng 0–100.")
+        if not isinstance(differences, dict) or not isinstance(differences.get("errors"), list):
+            raise RuntimeError("Engine không trả về danh sách lỗi phát âm hợp lệ.")
+        result["score"] = float(score)
         return result
     except gr.Error:
         raise
@@ -101,6 +106,10 @@ with gr.Blocks(title="English Learning AI – Luyện phát âm") as demo:
         "Âm thanh được xử lý trên máy chủ Space. Không nhập thông tin cá nhân "
         "hoặc nội dung nhạy cảm vào bài ghi âm."
     )
+
+# Limit concurrent model calls and queue depth to avoid exhausting the small
+# free ZeroGPU allowance during bursts of traffic.
+demo.queue(default_concurrency_limit=1, max_size=10)
 
 if __name__ == "__main__":
     demo.launch()
