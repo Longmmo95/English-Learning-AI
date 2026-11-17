@@ -8,3 +8,12 @@
 #speech-result p{line-height:1.8}
 #speak-record:disabled{opacity:.55;cursor:wait}
 @media(max-width:620px){.lesson{align-items:flex-start}.lesson em{font-size:9px}}
+
+.pronunciation-settings{display:grid;gap:8px;margin:18px 0;padding:14px;border:1px solid var(--line,#e5e7eb);border-radius:12px}
+.pronunciation-settings input{width:100%;max-width:100%;padding:11px;border:1px solid #d9dce8;border-radius:8px;font:inherit}
+.pronunciation-score{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0}
+.pronunciation-score strong{font-size:34px;color:var(--blue,#566be8)}
+.pronunciation-score strong small{font-size:13px}
+.pronunciation-error{display:grid;gap:3px;margin:8px 0;padding:10px;border-left:3px solid #e39a54;background:#fff8ef;border-radius:6px}
+.pronunciation-error small{color:#6d6259}
+#speak-record.recording{background:#b93838;color:white}
