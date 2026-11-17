@@ -42,7 +42,7 @@ jobs:
           assert 'manifest.webmanifest' in html and 'icon.svg' in html
           assert 'serviceWorker.register("./sw.js")' in app
           sw = Path("sw.js").read_text(encoding="utf-8")
-          assert "CACHE_NAME" in sw and "/api/" not in sw
+          assert "CACHE_NAME" in sw and 'url.pathname.includes("/api/")' in sw
           assert 'flashcards.js' in html and 'flashcards.css' in html
           assert 'flashcards:[' in app
           assert 'daily-routine' in app
