@@ -62,7 +62,7 @@ function vocabulary(){
  lessons.map(l=>'<h3>'+l.title+'</h3>'+l.words.map(w=>'<div class="word"><b>'+w[0]+'</b><small>'+w[1]+' · '+w[2]+'</small><button class="action" data-say="'+w[0]+'">▶ Nghe</button></div>').join("")).join("");
  box.querySelectorAll("[data-say]").forEach(b=>b.onclick=()=>say(b.dataset.say));
 }
-function normalizeWords(text){return text.toLocaleLowerCase("en-US").replace(/[^a-z0-9'\\s]/g," ").trim().split(/\\s+/).filter(Boolean)}
+function normalizeWords(text){return text.toLocaleLowerCase("en-US").replace(/[^a-z0-9'\s]/g," ").trim().split(/\s+/).filter(Boolean)}
 function speaking(){
  const phrases=lessons.flatMap(l=>l.phrases.map(p=>({lesson:l.title,text:p[0],meaning:p[1]})));
  box.innerHTML='<h2>Luyện nói từng từ</h2><p class="muted">Nghe câu mẫu, nhấn micro và đọc lại. Trình duyệt chuyển giọng nói thành chữ để đối chiếu từng từ; đây chưa phải AI phân tích âm vị.</p>'+
