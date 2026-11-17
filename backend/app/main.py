@@ -1,5 +1,12 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+
+from app.pronunciation import (
+    MAX_AUDIO_BYTES,
+    PronunciationEngineUnavailable,
+    analyze_recording,
+    engine_status,
+)
 
 app = FastAPI(title="English Learning AI API", version="0.2.0")
 app.add_middleware(
@@ -97,12 +104,25 @@ def get_lesson(lesson_id: str):
 
 @app.get("/api/v1/pronunciation/status")
 def pronunciation_status():
-    return {
-        "available": False,
-        "granularity": "word",
-        "message": (
-            "Chưa tích hợp mô hình AI nhận diện và căn chỉnh phát âm. "
-            "Không trả về điểm số giả. Bản web tĩnh có thể dùng nhận diện giọng nói "
-            "của trình duyệt để đối chiếu văn bản, không phải chấm âm vị."
-        ),
-    }
+    return engine_status()
+
+
+@app.post("/api/v1/pronunciation/analyze")
+def pronunciation_analyze(
+    file: UploadFile = File(...),
+    expected_text: str = Form(...),
+):
+    audio_bytes = file.file.read(MAX_AUDIO_BYTES + 1)
+    if len(audio_bytes) > MAX_AUDIO_BYTES:
+        raise HTTPException(status_code=413, detail="Bản ghi âm vượt quá giới hạn 12 MB.")
+    try:
+        return analyze_recording(audio_bytes, file.filename or "recording.webm", expected_text)
+    except PronunciationEngineUnavailable as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail="Không thể phân tích bản ghi âm. Hãy thử lại với câu ngắn và âm thanh rõ hơn.",
+        ) from exc
