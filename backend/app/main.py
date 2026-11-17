@@ -89,7 +89,7 @@ LESSONS = [
             {"english": "I have lunch at noon.", "vietnamese": "Tôi ăn trưa vào buổi trưa."},
             {"english": "I go to bed at ten.", "vietnamese": "Tôi đi ngủ lúc mười giờ."},
         ],
-    },,
+    },
     {
         "id": "food-drinks", "level": "A1", "title": "Đồ ăn & thức uống",
         "description": "Gọi tên món ăn, đồ uống và nói về sở thích đơn giản.",
