@@ -56,7 +56,10 @@
     if (again) again.onclick = () => { known.delete(card.term); save(); revealed = false; render(); };
     const mastered = document.querySelector("#mastered");
     if (mastered) mastered.onclick = () => {
-      known.add(card.term); save(); index = (index + 1) % currentDeck.length; revealed = false; render();
+      known.add(card.term); save();
+      if (reviewOnly) { if (index >= deck().length) index = 0; }
+      else index = (index + 1) % currentDeck.length;
+      revealed = false; render();
     };
     document.querySelector("#previous").onclick = () => { index = Math.max(0, index - 1); revealed = false; render(); };
     document.querySelector("#next").onclick = () => { index = Math.min(currentDeck.length - 1, index + 1); revealed = false; render(); };
