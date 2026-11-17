@@ -102,7 +102,12 @@ jobs:
           assert "openpronounce==0.4.0" in requirements
           assert "@spaces.GPU" in app
           assert "compare_audio_with_text" in app
-          print("Hugging Face adapter checks passed.")
+          assert "demo.queue(default_concurrency_limit=1, max_size=10)" in app
+          assert "score = result.get" in app
+          dockerfile = Path("backend/Dockerfile.pronunciation").read_text(encoding="utf-8")
+          assert "USER appuser" in dockerfile
+          assert "HEALTHCHECK" in dockerfile
+          print("Hugging Face and Docker configuration checks passed.")
           PY
 
   docker:
