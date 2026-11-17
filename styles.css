@@ -89,3 +89,7 @@ footer{color:#9295ad}
  .hero{border-radius:18px}
  .stats article:hover,.panel:hover{transform:none}
 }
+
+.word-extra{display:inline-block;padding:3px 6px;margin:2px;border-radius:5px;background:#fff4d6;color:#8a5a00;font-weight:700}
+#ios-dictation input{display:block;width:100%;min-height:44px;padding:12px;border:1px solid var(--line);border-radius:9px;font:16px Arial,sans-serif;margin:8px 0}
+#ios-dictation button{min-height:42px}
