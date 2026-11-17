@@ -1,3 +1,5 @@
+import os
+
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -9,9 +11,16 @@ from app.pronunciation import (
 )
 
 app = FastAPI(title="English Learning AI API", version="0.2.0")
+# Never expose the upload API to every website by default. Add local development
+# origins explicitly through ELA_ALLOWED_ORIGINS when needed.
+ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv("ELA_ALLOWED_ORIGINS", "https://longmmo95.github.io").split(",")
+    if origin.strip()
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Restrict to the deployed frontend origin before production.
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=False,
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
