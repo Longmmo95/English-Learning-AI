@@ -40,6 +40,7 @@ function say(text){
  speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang="en-US";u.rate=.88;speechSynthesis.speak(u);markStudyDay();
 }
 function show(name){
+ if(name!=="speaking"&&typeof window.stopSpeakingCapture==="function"){window.stopSpeakingCapture();window.stopSpeakingCapture=null}
  document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.view===name));
  [".hero",".stats",".columns"].forEach(s=>$(s).classList.toggle("hidden",name!=="home"));box.classList.toggle("hidden",name==="home");
  const titles={home:["Chào bạn! ✦","Mỗi ngày tiến bộ một chút. Hôm nay mình cùng học nhé!"],path:["Lộ trình học","Học từng chủ đề nhỏ, đi từ dễ đến khó."],vocabulary:["Từ vựng","Nghe, đọc và ghi nhớ những từ thông dụng."],speaking:["Luyện nói","Nghe mẫu, nói theo và xem từ nào được trình duyệt nhận diện."],review:["Ôn tập","Kiểm tra nhanh kiến thức từ cả sáu chủ đề."],flashcards:["Thẻ ghi nhớ","Ôn từ vựng bằng cách tự nhớ nghĩa trước khi lật thẻ."]};
@@ -78,7 +79,14 @@ function speaking(){
  const apiInput=$("#pronunciation-api"),recordButton=$("#speak-record");
  const apiKey="ela-pronunciation-api-url";
  apiInput.value=localStorage.getItem(apiKey)||"";
- let recorder=null,stream=null,chunks=[],recording=false;
+ let recorder=null,stream=null,chunks=[],recording=false,recordingTimeout=null,discardRecording=false;
+ window.stopSpeakingCapture=()=>{
+  if(!recording&&!stream)return;
+  discardRecording=true;recording=false;clearTimeout(recordingTimeout);recordingTimeout=null;
+  if(recorder&&recorder.state!=="inactive")recorder.stop();
+  if(stream)stream.getTracks().forEach(track=>track.stop());stream=null;chunks=[];
+  recordButton.disabled=false;recordButton.textContent="🎙 Ghi âm và chấm AI";recordButton.classList.remove("recording");
+ };
  function current(){return phrases[Number(select.value)]}
  function safe(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
  function renderTarget(){const p=current();target.innerHTML="<b>"+safe(p.text)+"</b><small>"+safe(p.meaning)+" · "+safe(p.lesson)+"</small>";result.classList.add("hidden")}
@@ -138,7 +146,7 @@ function speaking(){
   }catch(error){status.textContent="Không thể kết nối backend: "+error.message+". Kiểm tra URL và cấu hình CORS."}
  };
  recordButton.onclick=async()=>{
-  if(recording){recorder.stop();recording=false;recordButton.textContent="🎙 Bắt đầu ghi âm";recordButton.classList.remove("recording");return}
+  if(recording){clearTimeout(recordingTimeout);recordingTimeout=null;recorder.stop();recording=false;recordButton.textContent="🎙 Ghi âm và chấm AI";recordButton.classList.remove("recording");return}
   if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){status.textContent="Trình duyệt này chưa hỗ trợ ghi âm. Hãy dùng Chrome hoặc Edge trên HTTPS.";return}
   try{
    stream=await navigator.mediaDevices.getUserMedia({audio:true});chunks=[];
@@ -147,14 +155,17 @@ function speaking(){
    recorder.ondataavailable=event=>{if(event.data.size)chunks.push(event.data)};
    recorder.onerror=()=>{status.textContent="Ghi âm gặp lỗi. Hãy kiểm tra micro và thử lại."};
    recorder.onstop=async()=>{
-    stream.getTracks().forEach(track=>track.stop());stream=null;
+    clearTimeout(recordingTimeout);recordingTimeout=null;
+    if(stream)stream.getTracks().forEach(track=>track.stop());stream=null;
+    if(discardRecording){discardRecording=false;chunks=[];return}
     const blob=new Blob(chunks,{type:recorder.mimeType||"audio/webm"});
     if(blob.size>12*1024*1024){status.textContent="Bản ghi vượt quá 12 MB. Hãy đọc câu ngắn hơn.";return}
     if(blob.size<1000){status.textContent="Bản ghi quá ngắn. Hãy thử ghi âm lại.";return}
     await submitRecording(blob);
    };
-   recorder.start();recording=true;recordButton.textContent="■ Dừng và chấm";recordButton.classList.add("recording");
-   status.textContent="Đang ghi âm. Đọc câu mẫu rõ ràng, sau đó nhấn Dừng và chấm.";
+   recorder.start();recording=true;discardRecording=false;recordButton.textContent="■ Dừng và chấm";recordButton.classList.add("recording");
+   status.textContent="Đang ghi âm. Đọc câu mẫu rõ ràng, sau đó nhấn Dừng và chấm. Tối đa 30 giây.";
+   recordingTimeout=setTimeout(()=>{if(recording&&recorder&&recorder.state!=="inactive"){status.textContent="Đã đạt giới hạn 30 giây. Đang gửi bản ghi để phân tích.";recording=false;recordButton.textContent="🎙 Ghi âm và chấm AI";recordButton.classList.remove("recording");recorder.stop()}},30000);
   }catch(error){if(stream)stream.getTracks().forEach(track=>track.stop());stream=null;status.textContent=error.name==="NotAllowedError"?"Bạn chưa cấp quyền sử dụng micro. Hãy bật quyền micro cho website.":"Không thể mở micro: "+error.message}
  };
 }
