@@ -189,3 +189,13 @@ function review(){
 document.querySelectorAll("[data-view]").forEach(b=>b.onclick=()=>show(b.dataset.view));
 $("#start").onclick=()=>{show("path");lesson("greetings")};
 updateProgress();
+
+
+// Register the lightweight offline app shell. API requests are never cached.
+if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(error => {
+      console.warn("Không thể bật chế độ ngoại tuyến:", error);
+    });
+  });
+}
