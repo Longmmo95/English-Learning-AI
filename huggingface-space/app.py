@@ -13,14 +13,16 @@ from pathlib import Path
 os.environ.setdefault("OPENPRONOUNCE_DEVICE", "cuda")
 os.environ.setdefault("OPENPRONOUNCE_TTS", "gtts")
 
-import gradio as gr
 import spaces
+import gradio as gr
 
 from openpronounce import audio
 from openpronounce.phones import _load_model as load_phone_model
 from openpronounce.speech import _load_models as load_word_model
 
 MAX_AUDIO_BYTES = 12 * 1024 * 1024
+MAX_AUDIO_SECONDS = 30
+SAMPLE_RATE = 16000
 MAX_TEXT_LENGTH = 300
 
 # ZeroGPU's documented pattern is to place models on CUDA at module startup,
@@ -48,6 +50,9 @@ def assess_pronunciation(audio_path: str | None, expected_text: str):
 
     try:
         waveform = audio.load(str(path))
+        duration = len(waveform) / SAMPLE_RATE
+        if duration <= 0 or duration > MAX_AUDIO_SECONDS:
+            raise ValueError(f"Bản ghi âm phải dài từ 0 đến {MAX_AUDIO_SECONDS} giây.")
         result = __import__(
             "openpronounce", fromlist=["compare_audio_with_text"]
         ).compare_audio_with_text(waveform, expected_text, lang="en")
