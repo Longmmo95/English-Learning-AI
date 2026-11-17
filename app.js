@@ -73,7 +73,7 @@ function speaking(){
  '<label for="speaking-phrase">Chọn câu luyện tập</label><select id="speaking-phrase" class="action">'+phrases.map((p,i)=>'<option value="'+i+'">'+p.lesson+' — '+p.text+'</option>').join("")+'</select>'+
  '<div class="word" id="speaking-target"></div><div class="flash-actions"><button class="action" id="speak-listen">🔊 Nghe câu mẫu</button><button class="action flash-reveal" id="speak-record">🎙 Ghi âm và chấm AI</button><button class="action" id="speak-browser-check">Đối chiếu chữ miễn phí</button></div>'+
  '<div class="pronunciation-settings"><label for="pronunciation-api">Địa chỉ máy chủ AI (HTTPS)</label><input id="pronunciation-api" type="url" placeholder="https://ten-may-chu-cua-ban" autocomplete="url"><button class="action" id="save-pronunciation-api">Lưu địa chỉ máy chủ</button></div>'+
- '<p id="speech-status" class="muted" aria-live="polite">Cần kết nối backend OpenPronounce riêng. Bản GitHub Pages không tự chạy mô hình AI.</p><div id="speech-result" class="word hidden" aria-live="polite"></div>'+
+ '<p id="speech-status" class="muted" aria-live="polite">Cần kết nối backend OpenPronounce riêng. Bản GitHub Pages không tự chạy mô hình AI.</p><div id="speech-result" class="word hidden" aria-live="polite"></div><div id="ios-dictation" class="word hidden"><label for="dictation-text">Nhập bằng giọng nói trên bàn phím iPhone</label><input id="dictation-text" type="text" inputmode="text" autocomplete="off" placeholder="Chạm micro trên bàn phím và đọc câu tiếng Anh"><button class="action" id="compare-dictation" type="button">So sánh từng từ</button><small>Miễn phí. iPhone chuyển giọng nói thành chữ bằng tính năng đọc chính tả của iOS; website không tải bản ghi âm lên máy chủ.</small></div>'+
  '<p class="muted">Bản ghi âm được gửi tới máy chủ bạn cấu hình. Giới hạn 12 MB. Điểm AI là ước lượng hỗ trợ luyện tập, có thể có sai số.</p>';
  const select=$("#speaking-phrase"),target=$("#speaking-target"),status=$("#speech-status"),result=$("#speech-result");
  const apiInput=$("#pronunciation-api"),recordButton=$("#speak-record");
@@ -116,21 +116,51 @@ function speaking(){
   finally{recordButton.disabled=false}
  }
  select.onchange=renderTarget;renderTarget();$("#speak-listen").onclick=()=>say(current().text);
+ function compareDictation(heard){
+  const expected=normalizeWords(current().text),actual=normalizeWords(heard);
+  // Align words with an LCS table so omitted/extra words do not shift every later result.
+  const dp=Array.from({length:expected.length+1},()=>Array(actual.length+1).fill(0));
+  for(let i=expected.length-1;i>=0;i--)for(let j=actual.length-1;j>=0;j--)
+   dp[i][j]=expected[i]===actual[j]?1+dp[i+1][j+1]:Math.max(dp[i+1][j],dp[i][j+1]);
+  const aligned=[];let i=0,j=0;
+  while(i<expected.length&&j<actual.length){
+   if(expected[i]===actual[j]){aligned.push({word:expected[i],kind:"match"});i++;j++}
+   else if(dp[i+1][j]>=dp[i][j+1]){aligned.push({word:expected[i],kind:"missing"});i++}
+   else{aligned.push({word:actual[j],kind:"extra"});j++}
+  }
+  while(i<expected.length)aligned.push({word:expected[i++],kind:"missing"});
+  while(j<actual.length)aligned.push({word:actual[j++],kind:"extra"});
+  const matched=aligned.filter(x=>x.kind==="match").length;
+  const detail=aligned.map(x=>'<span class="'+(x.kind==="match"?"word-match":x.kind==="missing"?"word-miss":"word-extra")+'">'+safe(x.word)+(x.kind==="missing"?" (thiếu)":x.kind==="extra"?" (thừa)":"")+'</span>').join(" ");
+  result.innerHTML="<b>Bạn vừa đọc:</b><p>"+safe(heard)+"</p><b>Đối chiếu từng từ:</b><p>"+detail+"</p><p class=\"muted\">Khớp "+matched+"/"+expected.length+" từ mẫu. Đây là đối chiếu văn bản, không đánh giá độ chuẩn của âm phát âm.</p>";
+  result.classList.remove("hidden");status.textContent="Đã đối chiếu xong. Bạn có thể nghe mẫu và thử lại.";markStudyDay();
+ }
  $("#speak-browser-check").onclick=()=>{
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SR){status.textContent="Trình duyệt chưa hỗ trợ nhận diện giọng nói. Hãy thử Chrome hoặc Edge.";return}
-  const recognition=new SR();recognition.lang="en-US";recognition.interimResults=false;recognition.maxAlternatives=1;
-  status.textContent="Đang nghe để đối chiếu chữ. Chế độ này không chấm âm vị.";
-  recognition.onresult=event=>{
-   const heard=event.results[0][0].transcript,expected=normalizeWords(current().text),actual=normalizeWords(heard);
-   const matches=expected.map((word,i)=>({word,matched:actual[i]===word}));
-   const detail=matches.map(x=>'<span class="'+(x.matched?"word-match":"word-miss")+'">'+safe(x.word)+'</span>').join(" ");
-   result.innerHTML="<b>Bạn vừa nói:</b><p>"+safe(heard)+"</p><b>Đối chiếu văn bản:</b><p>"+detail+"</p><p class=\"muted\">Khớp "+matches.filter(x=>x.matched).length+"/"+expected.length+" từ. Đây chỉ là nhận diện chữ, không phải điểm phát âm.</p>";
-   result.classList.remove("hidden");status.textContent="Đã đối chiếu bằng trình duyệt.";markStudyDay();
-  };
-  recognition.onerror=event=>{status.textContent="Không nhận diện được giọng nói: "+event.error};
-  try{recognition.start()}catch(error){status.textContent="Không thể bật micro: "+error.message}
+  if(SR){
+   const recognition=new SR();recognition.lang="en-US";recognition.interimResults=false;recognition.maxAlternatives=1;
+   status.textContent="Đang nghe. Hãy đọc câu tiếng Anh sau khi trình duyệt hỏi quyền micro.";
+   recognition.onresult=event=>{const heard=event.results?.[0]?.[0]?.transcript||"";if(heard)compareDictation(heard);else status.textContent="Chưa nhận diện được lời nói. Hãy thử lại."};
+   recognition.onerror=event=>{
+    status.textContent="Trình duyệt không nhận diện được giọng nói ("+event.error+"). Có thể dùng cách nhập bằng giọng nói của bàn phím bên dưới.";
+    $("#ios-dictation").classList.remove("hidden");
+   };
+   recognition.onnomatch=()=>{status.textContent="Chưa nghe rõ câu. Hãy thử lại hoặc dùng micro trên bàn phím.";$("#ios-dictation").classList.remove("hidden")};
+   try{recognition.start()}catch(error){status.textContent="Không bật được nhận diện giọng nói: "+error.message;$("#ios-dictation").classList.remove("hidden")}
+   return;
+  }
+  // iOS Safari does not consistently expose the Web Speech recognition API.
+  // Use the operating-system keyboard dictation as a free, no-backend fallback.
+  $("#ios-dictation").classList.remove("hidden");
+  status.textContent="Trình duyệt này chưa hỗ trợ nhận diện giọng nói trực tiếp. Chạm ô bên dưới, bật micro trên bàn phím iPhone, đọc câu tiếng Anh rồi nhấn So sánh.";
+  $("#dictation-text").focus();
  };
+ $("#compare-dictation").onclick=()=>{
+  const heard=$("#dictation-text").value.trim();
+  if(!heard){status.textContent="Chưa có nội dung nhận diện. Hãy chạm micro trên bàn phím và đọc câu trước.";$("#dictation-text").focus();return}
+  compareDictation(heard);
+ };
+
 
  $("#save-pronunciation-api").onclick=async()=>{
   const value=apiInput.value.trim();
