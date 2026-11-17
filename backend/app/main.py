@@ -89,7 +89,61 @@ LESSONS = [
             {"english": "I have lunch at noon.", "vietnamese": "Tôi ăn trưa vào buổi trưa."},
             {"english": "I go to bed at ten.", "vietnamese": "Tôi đi ngủ lúc mười giờ."},
         ],
+    },,
+    {
+        "id": "food-drinks", "level": "A1", "title": "Đồ ăn & thức uống",
+        "description": "Gọi tên món ăn, đồ uống và nói về sở thích đơn giản.",
+        "vocabulary": [
+            {"word": "food", "meaning_vi": "đồ ăn"}, {"word": "water", "meaning_vi": "nước"},
+            {"word": "rice", "meaning_vi": "cơm, gạo"}, {"word": "bread", "meaning_vi": "bánh mì"},
+            {"word": "chicken", "meaning_vi": "thịt gà"}, {"word": "fish", "meaning_vi": "cá"},
+            {"word": "apple", "meaning_vi": "quả táo"}, {"word": "coffee", "meaning_vi": "cà phê"},
+            {"word": "milk", "meaning_vi": "sữa"}, {"word": "hungry", "meaning_vi": "đói"}
+        ],
+        "phrases": [
+            {"english": "I am hungry.", "vietnamese": "Tôi đang đói."},
+            {"english": "I would like some water.", "vietnamese": "Tôi muốn uống một chút nước."},
+            {"english": "I eat rice every day.", "vietnamese": "Tôi ăn cơm mỗi ngày."},
+            {"english": "This is an apple.", "vietnamese": "Đây là một quả táo."},
+            {"english": "I like chicken.", "vietnamese": "Tôi thích thịt gà."}
+        ]
     },
+    {
+        "id": "shopping", "level": "A1", "title": "Mua sắm",
+        "description": "Hỏi giá, chọn đồ và nói về kích cỡ khi mua sắm.",
+        "vocabulary": [
+            {"word": "shop", "meaning_vi": "cửa hàng"}, {"word": "price", "meaning_vi": "giá"},
+            {"word": "money", "meaning_vi": "tiền"}, {"word": "buy", "meaning_vi": "mua"},
+            {"word": "sell", "meaning_vi": "bán"}, {"word": "cheap", "meaning_vi": "rẻ"},
+            {"word": "expensive", "meaning_vi": "đắt"}, {"word": "size", "meaning_vi": "kích cỡ"},
+            {"word": "small", "meaning_vi": "nhỏ"}, {"word": "large", "meaning_vi": "lớn"}
+        ],
+        "phrases": [
+            {"english": "How much is this?", "vietnamese": "Cái này giá bao nhiêu?"},
+            {"english": "It is too expensive.", "vietnamese": "Nó đắt quá."},
+            {"english": "I want to buy this.", "vietnamese": "Tôi muốn mua cái này."},
+            {"english": "Do you have a smaller size?", "vietnamese": "Bạn có cỡ nhỏ hơn không?"},
+            {"english": "Can I pay by card?", "vietnamese": "Tôi có thể thanh toán bằng thẻ không?"}
+        ]
+    },
+    {
+        "id": "places-directions", "level": "A1", "title": "Địa điểm & chỉ đường",
+        "description": "Hỏi vị trí các địa điểm quen thuộc và hiểu chỉ dẫn cơ bản.",
+        "vocabulary": [
+            {"word": "station", "meaning_vi": "nhà ga"}, {"word": "hospital", "meaning_vi": "bệnh viện"},
+            {"word": "bank", "meaning_vi": "ngân hàng"}, {"word": "school", "meaning_vi": "trường học"},
+            {"word": "street", "meaning_vi": "đường phố"}, {"word": "left", "meaning_vi": "bên trái"},
+            {"word": "right", "meaning_vi": "bên phải"}, {"word": "near", "meaning_vi": "gần"},
+            {"word": "far", "meaning_vi": "xa"}, {"word": "where", "meaning_vi": "ở đâu"}
+        ],
+        "phrases": [
+            {"english": "Where is the bank?", "vietnamese": "Ngân hàng ở đâu?"},
+            {"english": "Go straight ahead.", "vietnamese": "Đi thẳng về phía trước."},
+            {"english": "Turn left at the corner.", "vietnamese": "Rẽ trái ở góc đường."},
+            {"english": "The hospital is near here.", "vietnamese": "Bệnh viện ở gần đây."},
+            {"english": "Is it far from here?", "vietnamese": "Nó có xa đây không?"}
+        ]
+    }
 ]
 
 
