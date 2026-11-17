@@ -41,8 +41,12 @@ jobs:
           assert 'data-view="flashcards"' in html
           assert 'flashcards.js' in html and 'flashcards.css' in html
           assert 'flashcards:[' in app
+          assert 'daily-routine' in app
+          assert 'SpeechRecognition' in app
+          assert 'normalizeWords' in app
           assert 'ela-flashcards-known' in cards
           assert 'localStorage' in cards
+          assert 'data-lesson-id="daily-routine"' in html
           print("Frontend integration checks passed.")
           PY
 
