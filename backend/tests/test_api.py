@@ -185,3 +185,34 @@ def test_engine_result_preserves_a_real_numeric_score():
         "differences": {"errors": [{"word": "hello"}]},
     })
     assert result["score"] == 87.25
+
+
+def test_pronunciation_endpoint_rate_limits_repeated_requests(monkeypatch):
+    import app.main as main_module
+
+    monkeypatch.setattr(
+        main_module,
+        "analyze_recording",
+        lambda *args, **kwargs: {"score": 80, "differences": {"errors": []}},
+    )
+    limited_ip = "198.51.100.77"
+    main_module._request_times.pop(limited_ip, None)
+    limited_client = TestClient(app, client=(limited_ip, 12345))
+    try:
+        for _ in range(main_module.PRONUNCIATION_REQUESTS_PER_MINUTE):
+            response = limited_client.post(
+                "/api/v1/pronunciation/analyze",
+                files={"file": ("voice.webm", b"fake-audio", "audio/webm")},
+                data={"expected_text": "Hello"},
+            )
+            assert response.status_code == 200
+        blocked = limited_client.post(
+            "/api/v1/pronunciation/analyze",
+            files={"file": ("voice.webm", b"fake-audio", "audio/webm")},
+            data={"expected_text": "Hello"},
+        )
+        assert blocked.status_code == 429
+        assert blocked.headers["retry-after"]
+    finally:
+        main_module._request_times.pop(limited_ip, None)
+        limited_client.close()
