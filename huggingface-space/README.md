@@ -32,6 +32,7 @@ Không chọn CPU Basic/Docker trả phí và không bật phần cứng tính p
 - ZeroGPU có hạn mức GPU miễn phí theo tài khoản và có thể phải chờ hàng đợi.
 - Chỉ tiếng Anh được hiệu chuẩn. Điểm số là ước lượng hỗ trợ học tập, không phải đánh giá tuyệt đối.
 - Mỗi bản ghi tối đa 12 MB và 30 giây để hạn chế thời gian xử lý và tải GPU.
+- Hàng đợi Gradio giới hạn một lượt inference đồng thời và tối đa 10 yêu cầu chờ.
 - Bản ghi âm được gửi tới máy chủ Space để phân tích. Không ghi âm nội dung riêng tư.
 - Ứng dụng không chứa API key hoặc token.
 
