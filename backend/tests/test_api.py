@@ -10,7 +10,7 @@ def test_health():
     assert response.json()["status"] == "ok"
 
 
-def test_list_lessons_contains_three_a1_lessons():
+def test_list_lessons_contains_six_a1_lessons():
     response = client.get("/api/v1/lessons")
     assert response.status_code == 200
     payload = response.json()
