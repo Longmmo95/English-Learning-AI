@@ -67,7 +67,7 @@ function speaking(){
  const phrases=lessons.flatMap(l=>l.phrases.map(p=>({lesson:l.title,text:p[0],meaning:p[1]})));
  box.innerHTML='<h2>Luyện phát âm bằng AI</h2><p class="muted">Ghi âm câu mẫu và gửi đến máy chủ OpenPronounce để phân tích tín hiệu giọng nói, âm vị IPA và từ cần luyện lại.</p>'+
  '<label for="speaking-phrase">Chọn câu luyện tập</label><select id="speaking-phrase" class="action">'+phrases.map((p,i)=>'<option value="'+i+'">'+p.lesson+' — '+p.text+'</option>').join("")+'</select>'+
- '<div class="word" id="speaking-target"></div><div class="flash-actions"><button class="action" id="speak-listen">🔊 Nghe câu mẫu</button><button class="action flash-reveal" id="speak-record">🎙 Bắt đầu ghi âm</button></div>'+
+ '<div class="word" id="speaking-target"></div><div class="flash-actions"><button class="action" id="speak-listen">🔊 Nghe câu mẫu</button><button class="action flash-reveal" id="speak-record">🎙 Ghi âm và chấm AI</button><button class="action" id="speak-browser-check">Đối chiếu chữ miễn phí</button></div>'+
  '<div class="pronunciation-settings"><label for="pronunciation-api">Địa chỉ máy chủ AI (HTTPS)</label><input id="pronunciation-api" type="url" placeholder="https://ten-may-chu-cua-ban" autocomplete="url"><button class="action" id="save-pronunciation-api">Lưu địa chỉ máy chủ</button></div>'+
  '<p id="speech-status" class="muted" aria-live="polite">Cần kết nối backend OpenPronounce riêng. Bản GitHub Pages không tự chạy mô hình AI.</p><div id="speech-result" class="word hidden" aria-live="polite"></div>'+
  '<p class="muted">Bản ghi âm được gửi tới máy chủ bạn cấu hình. Giới hạn 12 MB. Điểm AI là ước lượng hỗ trợ luyện tập, có thể có sai số.</p>';
@@ -105,6 +105,22 @@ function speaking(){
   finally{recordButton.disabled=false}
  }
  select.onchange=renderTarget;renderTarget();$("#speak-listen").onclick=()=>say(current().text);
+ $("#speak-browser-check").onclick=()=>{
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){status.textContent="Trình duyệt chưa hỗ trợ nhận diện giọng nói. Hãy thử Chrome hoặc Edge.";return}
+  const recognition=new SR();recognition.lang="en-US";recognition.interimResults=false;recognition.maxAlternatives=1;
+  status.textContent="Đang nghe để đối chiếu chữ. Chế độ này không chấm âm vị.";
+  recognition.onresult=event=>{
+   const heard=event.results[0][0].transcript,expected=normalizeWords(current().text),actual=normalizeWords(heard);
+   const matches=expected.map((word,i)=>({word,matched:actual[i]===word}));
+   const detail=matches.map(x=>'<span class="'+(x.matched?"word-match":"word-miss")+'">'+safe(x.word)+'</span>').join(" ");
+   result.innerHTML="<b>Bạn vừa nói:</b><p>"+safe(heard)+"</p><b>Đối chiếu văn bản:</b><p>"+detail+"</p><p class=\\"muted\\">Khớp "+matches.filter(x=>x.matched).length+"/"+expected.length+" từ. Đây chỉ là nhận diện chữ, không phải điểm phát âm.</p>";
+   result.classList.remove("hidden");status.textContent="Đã đối chiếu bằng trình duyệt.";markStudyDay();
+  };
+  recognition.onerror=event=>{status.textContent="Không nhận diện được giọng nói: "+event.error};
+  try{recognition.start()}catch(error){status.textContent="Không thể bật micro: "+error.message}
+ };
+
  $("#save-pronunciation-api").onclick=async()=>{
   const value=apiInput.value.trim();
   if(!value){localStorage.removeItem(apiKey);status.textContent="Đã xóa địa chỉ backend.";return}
