@@ -49,6 +49,8 @@ jobs:
           assert 'ela-pronunciation-api-url' in app
           assert 'ela-flashcards-known' in cards
           assert 'localStorage' in cards
+          assert 'toggle-review' in cards and 'shuffle' in cards and 'reset' in cards
+          assert 'reviewOnly' in cards and 'known.clear()' in cards
           assert 'data-lesson-id="daily-routine"' in html
           print("Frontend integration checks passed.")
           PY
