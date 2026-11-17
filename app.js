@@ -160,11 +160,11 @@ function speaking(){
 }
 function review(){
  const all=lessons.flatMap(l=>l.words.map(w=>({question:"“"+w[0]+"” có nghĩa là gì?",answer:w[1],lesson:l.title})));
- const questions=all.filter((_,i)=>i%2===0).slice(0,8);let score=0,answered=0;
+ const questions=[...all].sort(()=>Math.random()-.5).slice(0,8);let score=0,answered=0;
  box.innerHTML='<h2>Ôn tập từ vựng A1</h2><p class="muted">8 câu hỏi ngắn, lấy từ cả ba bài học.</p>'+
  questions.map((q,i)=>{
-  const distractors=all.filter(x=>x.answer!==q.answer).slice(i,i+2).map(x=>x.answer);
-  const options=[q.answer,...distractors].sort((a,b)=>a.localeCompare(b,"vi"));
+  const distractors=[...new Set(all.filter(x=>x.answer!==q.answer).map(x=>x.answer))].sort(()=>Math.random()-.5).slice(0,2);
+  const options=[q.answer,...distractors].sort(()=>Math.random()-.5);
   return '<div class="word"><b>'+(i+1)+'. '+q.question+'</b><small>'+q.lesson+'</small><div>'+options.map(o=>'<button class="action" data-question="'+i+'" data-option="'+encodeURIComponent(o)+'">'+o+'</button>').join("")+'</div><small id="feedback-'+i+'" aria-live="polite"></small></div>';
  }).join("")+'<h3 id="quiz-score">Đã trả lời 0/'+questions.length+'</h3>';
  box.querySelectorAll("[data-question]").forEach(b=>b.onclick=()=>{
