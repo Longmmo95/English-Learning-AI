@@ -44,3 +44,13 @@ Bản ghi âm được gửi đến backend do bạn tự quản lý; endpoint x
 ## Lưu ý chất lượng
 
 OpenPronounce công bố giới hạn nhận diện và khả năng báo nhầm; không nên xem điểm số là kết luận tuyệt đối. Chỉ chấm câu tiếng Anh ngắn, thu âm rõ, nói tự nhiên, không có tiếng ồn nền lớn.
+
+
+## Chạy bằng Docker
+
+Từ thư mục gốc repository:
+
+    docker build -f backend/Dockerfile.pronunciation -t english-learning-ai-api .
+    docker run --rm -p 8000:8000 -v english-learning-models:/models english-learning-ai-api
+
+Lệnh trên tạo một máy chủ CPU. Volume Docker giữ model weights giữa các lần chạy; image có thể lớn do PyTorch và OpenPronounce. Khi đưa lên Internet, cần HTTPS, giới hạn truy cập và cấu hình CORS chỉ cho website của bạn.
