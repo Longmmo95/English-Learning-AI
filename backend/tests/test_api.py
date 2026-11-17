@@ -92,3 +92,26 @@ def test_pronunciation_upload_validates_bad_input(monkeypatch):
         data={"expected_text": " "},
     )
     assert response.status_code == 422
+
+
+
+def test_pronunciation_adapter_rejects_empty_audio_without_model():
+    from app.pronunciation import analyze_recording
+
+    try:
+        analyze_recording(b"", "empty.webm", "Hello")
+    except ValueError as exc:
+        assert "trống" in str(exc)
+    else:
+        raise AssertionError("Empty audio must be rejected")
+
+
+def test_pronunciation_adapter_rejects_long_text_without_model():
+    from app.pronunciation import analyze_recording
+
+    try:
+        analyze_recording(b"audio", "voice.webm", "a" * 301)
+    except ValueError as exc:
+        assert "300 ký tự" in str(exc)
+    else:
+        raise AssertionError("Long text must be rejected")
