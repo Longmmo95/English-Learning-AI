@@ -104,3 +104,28 @@ jobs:
           assert "compare_audio_with_text" in app
           print("Hugging Face adapter checks passed.")
           PY
+
+  docker:
+    name: Docker build and API smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build CPU pronunciation API image
+        run: docker build --file backend/Dockerfile.pronunciation --tag english-learning-ai-api:ci .
+      - name: Start API container and verify health endpoint
+        run: |
+          docker run --detach --name ela-api-ci --publish 127.0.0.1:8000:8000 english-learning-ai-api:ci
+          cleanup() {
+            docker logs ela-api-ci || true
+            docker rm --force ela-api-ci || true
+          }
+          trap cleanup EXIT
+          for attempt in $(seq 1 45); do
+            if curl --fail --silent http://127.0.0.1:8000/health; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "API did not become healthy within 90 seconds."
+          exit 1
