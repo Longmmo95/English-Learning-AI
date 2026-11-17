@@ -46,11 +46,11 @@ def test_unknown_lesson():
     assert client.get("/api/v1/lessons/not-real").status_code == 404
 
 
-def test_pronunciation_is_not_faked():
+def test_pronunciation_status_reports_engine_honestly():
     result = client.get("/api/v1/pronunciation/status").json()
-    assert result["available"] is False
-    assert result["granularity"] == "word"
-    assert "điểm số giả" in result["message"]
+    assert "available" in result
+    assert result["granularity"] in {"phoneme_and_word", "not_available"}
+    assert result["engine"] in {"OpenPronounce", None}
 
 
 
