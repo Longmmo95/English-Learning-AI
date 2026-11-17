@@ -1,5 +1,7 @@
 # English Learning AI
 
+[![Publish English Learning AI preview](https://github.com/Longmmo95/English-Learning-AI/actions/workflows/pages-preview.yml/badge.svg?branch=feature/interactive-flashcards)](https://github.com/Longmmo95/English-Learning-AI/actions/workflows/pages-preview.yml)
+
 Nền tảng học tiếng Anh độc lập, ưu tiên người Việt mới bắt đầu (A1). Dự án này nằm trong repository riêng `Longmmo95/English-Learning-AI`.
 
 ## Phạm vi an toàn
