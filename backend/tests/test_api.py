@@ -3,25 +3,51 @@ from app.main import app
 
 client = TestClient(app)
 
+
 def test_health():
     response = client.get("/health")
     assert response.status_code == 200
     assert response.json()["status"] == "ok"
 
-def test_list_lessons():
+
+def test_list_lessons_contains_three_a1_lessons():
     response = client.get("/api/v1/lessons")
     assert response.status_code == 200
-    assert response.json()["total"] >= 1
+    payload = response.json()
+    assert payload["total"] == 3
+    assert {item["id"] for item in payload["items"]} == {
+        "greetings", "family", "daily-routine"
+    }
 
-def test_get_lesson():
+
+def test_get_greetings_lesson():
     response = client.get("/api/v1/lessons/greetings")
     assert response.status_code == 200
-    assert response.json()["level"] == "A1"
+    lesson = response.json()
+    assert lesson["level"] == "A1"
+    assert len(lesson["vocabulary"]) == 6
+    assert len(lesson["phrases"]) == 5
+
+
+def test_family_lesson_has_eight_words_and_five_phrases():
+    lesson = client.get("/api/v1/lessons/family").json()
+    assert len(lesson["vocabulary"]) == 8
+    assert len(lesson["phrases"]) == 5
+
+
+def test_daily_routine_lesson():
+    lesson = client.get("/api/v1/lessons/daily-routine").json()
+    assert lesson["level"] == "A1"
+    assert len(lesson["vocabulary"]) == 10
+    assert len(lesson["phrases"]) == 5
+
 
 def test_unknown_lesson():
     assert client.get("/api/v1/lessons/not-real").status_code == 404
+
 
 def test_pronunciation_is_not_faked():
     result = client.get("/api/v1/pronunciation/status").json()
     assert result["available"] is False
     assert result["granularity"] == "word"
+    assert "điểm số giả" in result["message"]
