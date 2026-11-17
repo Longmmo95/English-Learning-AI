@@ -53,4 +53,4 @@ Từ thư mục gốc repository:
     docker build -f backend/Dockerfile.pronunciation -t english-learning-ai-api .
     docker run --rm -p 8000:8000 -v english-learning-models:/models english-learning-ai-api
 
-Lệnh trên tạo một máy chủ CPU. Volume Docker giữ model weights giữa các lần chạy; image có thể lớn do PyTorch và OpenPronounce. Khi đưa lên Internet, cần HTTPS, giới hạn truy cập và cấu hình CORS chỉ cho website của bạn.
+Lệnh trên tạo một máy chủ CPU. Volume Docker giữ model weights giữa các lần chạy; image có thể lớn do PyTorch và OpenPronounce. Khi đưa lên Internet, cần HTTPS, giới hạn truy cập và giữ CORS theo mặc định chỉ cho https://longmmo95.github.io. Nếu chạy giao diện ở localhost, đặt ELA_ALLOWED_ORIGINS=http://localhost:5500,http://127.0.0.1:5500 trước khi khởi động backend. Không dùng dấu * cho máy chủ công khai.
