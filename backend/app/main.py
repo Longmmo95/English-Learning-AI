@@ -1,6 +1,10 @@
 import os
+from collections import defaultdict, deque
+from threading import Lock
+from time import monotonic
 
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.pronunciation import (
@@ -10,7 +14,38 @@ from app.pronunciation import (
     engine_status,
 )
 
-app = FastAPI(title="English Learning AI API", version="0.2.0")
+app = FastAPI(title="English Learning AI API", version="0.3.0")
+
+# Basic per-process protection for the public audio endpoint. For multi-worker or
+# multi-instance deployments, enforce an additional shared limit at the proxy.
+PRONUNCIATION_REQUESTS_PER_MINUTE = 10
+_RATE_WINDOW_SECONDS = 60
+_request_times = defaultdict(deque)
+_request_times_lock = Lock()
+
+
+@app.middleware("http")
+async def pronunciation_rate_limit(request: Request, call_next):
+    if request.method == "POST" and request.url.path == "/api/v1/pronunciation/analyze":
+        client_ip = request.client.host if request.client else "unknown"
+        now = monotonic()
+        with _request_times_lock:
+            recent = _request_times[client_ip]
+            while recent and now - recent[0] >= _RATE_WINDOW_SECONDS:
+                recent.popleft()
+            if len(recent) >= PRONUNCIATION_REQUESTS_PER_MINUTE:
+                retry_after = max(1, int(_RATE_WINDOW_SECONDS - (now - recent[0])))
+                return JSONResponse(
+                    status_code=429,
+                    content={"detail": "Bạn gửi yêu cầu quá nhanh. Vui lòng chờ một phút rồi thử lại."},
+                    headers={"Retry-After": str(retry_after)},
+                )
+            recent.append(now)
+            if len(_request_times) > 5000:
+                for ip in list(_request_times):
+                    if not _request_times[ip] or now - _request_times[ip][-1] >= _RATE_WINDOW_SECONDS:
+                        _request_times.pop(ip, None)
+    return await call_next(request)
 # Never expose the upload API to every website by default. Add local development
 # origins explicitly through ELA_ALLOWED_ORIGINS when needed.
 ALLOWED_ORIGINS = [
