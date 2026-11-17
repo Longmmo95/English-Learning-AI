@@ -9,6 +9,20 @@ from pathlib import Path
 
 MAX_AUDIO_BYTES = 12 * 1024 * 1024
 MAX_EXPECTED_TEXT_LENGTH = 300
+MAX_AUDIO_SECONDS = 30
+SAMPLE_RATE = 16000
+
+
+def validate_audio_duration(waveform, sample_rate: int = SAMPLE_RATE) -> float:
+    """Reject unexpectedly long recordings before expensive model inference."""
+    if sample_rate <= 0 or waveform is None:
+        raise ValueError("Không đọc được bản ghi âm.")
+    duration = len(waveform) / sample_rate
+    if duration <= 0:
+        raise ValueError("Bản ghi âm đang trống.")
+    if duration > MAX_AUDIO_SECONDS:
+        raise ValueError(f"Bản ghi âm quá dài (tối đa {MAX_AUDIO_SECONDS} giây).")
+    return duration
 ALLOWED_SUFFIXES = {".webm", ".wav", ".ogg", ".mp3", ".m4a", ".flac"}
 
 
@@ -77,6 +91,7 @@ def analyze_recording(audio_bytes: bytes, filename: str, expected_text: str) -> 
             audio_file.write(audio_bytes)
             temp_path = audio_file.name
         waveform = load_audio(temp_path)
+        validate_audio_duration(waveform)
         result = compare_audio_with_text(waveform, expected_text, lang="en")
         return validate_engine_result(result)
     finally:
