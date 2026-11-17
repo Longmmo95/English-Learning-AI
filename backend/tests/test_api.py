@@ -1,3 +1,5 @@
+import pytest
+
 from fastapi.testclient import TestClient
 from app.main import app
 
@@ -149,3 +151,29 @@ def test_additional_a1_lessons_have_ten_words_and_five_phrases():
         assert lesson["level"] == "A1"
         assert len(lesson["vocabulary"]) == 10
         assert len(lesson["phrases"]) == 5
+
+
+@pytest.mark.parametrize("score", [None, True, "85", float("nan"), float("inf"), -1, 101])
+def test_engine_result_rejects_invalid_scores(score):
+    from app.pronunciation import validate_engine_result
+
+    with pytest.raises(RuntimeError):
+        validate_engine_result({"score": score, "differences": {"errors": []}})
+
+
+@pytest.mark.parametrize("differences", [None, {}, {"errors": "not-a-list"}])
+def test_engine_result_rejects_malformed_word_errors(differences):
+    from app.pronunciation import validate_engine_result
+
+    with pytest.raises(RuntimeError):
+        validate_engine_result({"score": 85.5, "differences": differences})
+
+
+def test_engine_result_preserves_a_real_numeric_score():
+    from app.pronunciation import validate_engine_result
+
+    result = validate_engine_result({
+        "score": 87.25,
+        "differences": {"errors": [{"word": "hello"}]},
+    })
+    assert result["score"] == 87.25

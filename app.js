@@ -68,7 +68,7 @@ function vocabulary(){
 function normalizeWords(text){return text.toLocaleLowerCase("en-US").replace(/[^a-z0-9'\s]/g," ").trim().split(/\s+/).filter(Boolean)}
 function speaking(){
  const phrases=lessons.flatMap(l=>l.phrases.map(p=>({lesson:l.title,text:p[0],meaning:p[1]})));
- box.innerHTML='<h2>Luyện phát âm bằng AI</h2><p class="muted">Ghi âm câu mẫu và gửi đến máy chủ OpenPronounce để phân tích tín hiệu giọng nói, âm vị IPA và từ cần luyện lại.</p>'+
+ box.innerHTML='<h2>Luyện nói &amp; phát âm</h2><p class="muted">Có hai chế độ: đối chiếu chữ miễn phí bằng trình duyệt hoặc gửi bản ghi đến máy chủ OpenPronounce để phân tích âm thanh, âm vị IPA và từ cần luyện lại.</p>'+
  '<label for="speaking-phrase">Chọn câu luyện tập</label><select id="speaking-phrase" class="action">'+phrases.map((p,i)=>'<option value="'+i+'">'+p.lesson+' — '+p.text+'</option>').join("")+'</select>'+
  '<div class="word" id="speaking-target"></div><div class="flash-actions"><button class="action" id="speak-listen">🔊 Nghe câu mẫu</button><button class="action flash-reveal" id="speak-record">🎙 Ghi âm và chấm AI</button><button class="action" id="speak-browser-check">Đối chiếu chữ miễn phí</button></div>'+
  '<div class="pronunciation-settings"><label for="pronunciation-api">Địa chỉ máy chủ AI (HTTPS)</label><input id="pronunciation-api" type="url" placeholder="https://ten-may-chu-cua-ban" autocomplete="url"><button class="action" id="save-pronunciation-api">Lưu địa chỉ máy chủ</button></div>'+
@@ -84,9 +84,9 @@ function speaking(){
  function renderTarget(){const p=current();target.innerHTML="<b>"+safe(p.text)+"</b><small>"+safe(p.meaning)+" · "+safe(p.lesson)+"</small>";result.classList.add("hidden")}
  function apiBase(){return (localStorage.getItem(apiKey)||"").replace(/\/+$/,"")}
  function renderAnalysis(data){
-  const score=Number(data.score),diff=data.differences||{},errors=Array.isArray(diff.errors)?diff.errors:[];
+  const rawScore=data?.score;const score=typeof rawScore==="number"&&Number.isFinite(rawScore)&&rawScore>=0&&rawScore<=100?Math.round(rawScore):null;if(score===null)throw new Error("Máy chủ không trả về điểm phát âm hợp lệ; không hiển thị điểm.");const diff=data.differences||{},errors=Array.isArray(diff.errors)?diff.errors:[];
   const errorHtml=errors.length?errors.map(item=>'<div class="pronunciation-error"><b>'+safe(item.word||"Từ cần luyện")+'</b><small>Mong đợi: /'+safe(item.expected||"—")+'/</small><small>Nhận diện: /'+safe(item.actual||"không nhận diện được")+'/</small></div>').join(""):'<p class="word-match">Không phát hiện lỗi âm vị đáng kể trong câu này. Hãy nghe lại để tự kiểm tra.</p>';
-  result.innerHTML='<div class="pronunciation-score"><span>Điểm đánh giá tham khảo</span><strong>'+ (Number.isFinite(score)?Math.round(score):"—")+'<small>/100</small></strong></div>'+
+  result.innerHTML='<div class="pronunciation-score"><span>Điểm đánh giá tham khảo</span><strong>'+ score+'<small>/100</small></strong></div>'+
    '<b>Máy nhận diện được:</b><p>'+safe(data.transcribe||"Chưa có bản phiên âm.")+'</p>'+
    '<b>Những từ nên luyện lại:</b>'+errorHtml+
    '<p class="muted">WER: '+safe(diff.word_error_rate??"—")+' · Phoneme error rate: '+safe(diff.phoneme_error_rate??"—")+'</p>'+
@@ -96,7 +96,7 @@ function speaking(){
  async function submitRecording(blob){
   const base=apiBase();
   if(!base){status.textContent="Bạn chưa nhập địa chỉ backend. Hãy nhập URL HTTPS của máy chủ OpenPronounce rồi lưu.";return}
-  const form=new FormData();form.append("file",blob,"practice.webm");form.append("expected_text",current().text);
+  result.classList.add("hidden");result.replaceChildren();const form=new FormData();const mime=(blob.type||"").toLowerCase();const extension=mime.includes("ogg")?"ogg":mime.includes("wav")?"wav":mime.includes("mp4")?"m4a":"webm";form.append("file",blob,"practice."+extension);form.append("expected_text",current().text);
   status.textContent="Đang tải bản ghi và phân tích âm vị. Lần đầu máy chủ có thể cần tải mô hình nên sẽ mất thời gian.";
   recordButton.disabled=true;
   try{

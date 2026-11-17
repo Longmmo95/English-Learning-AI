@@ -1,11 +1,11 @@
 # English Learning AI
 
-Website học tiếng Anh độc lập cho người Việt mới bắt đầu (A1), nằm trong repository riêng \`Longmmo95/English-Learning-AI\`.
+Website học tiếng Anh độc lập cho người Việt mới bắt đầu (A1), nằm trong repository riêng `Longmmo95/English-Learning-AI`.
 
 ## Bản xem trước
 - Website: https://longmmo95.github.io/English-Learning-AI/
-- Nhánh thử nghiệm: \`feature/interactive-flashcards\`
-- Mọi thay đổi hiện được kiểm tra trên nhánh thử nghiệm; chưa tự động gộp vào \`main\`.
+- Nhánh thử nghiệm: `feature/interactive-flashcards`
+- Mọi thay đổi hiện được kiểm tra trên nhánh thử nghiệm; chưa tự động gộp vào `main`.
 
 ## Tính năng hiện có
 - [x] Trang tổng quan và lộ trình 6 bài học A1: chào hỏi, gia đình, công việc hằng ngày, đồ ăn & thức uống, mua sắm, địa điểm & chỉ đường.
@@ -24,19 +24,19 @@ Website học tiếng Anh độc lập cho người Việt mới bắt đầu (A
 - Cần HTTPS và quyền micro để dùng chức năng nhận diện giọng nói; hỗ trợ tùy trình duyệt.
 
 ## Chạy backend cục bộ
-\`\`\`bash
+```bash
 cd backend
 pip install -r requirements.txt
 uvicorn app.main:app --reload
-\`\`\`
+```
 
 ## Kiểm thử backend
-\`\`\`bash
+```bash
 cd backend
 python -m pytest -q
-\`\`\`
+```
 
 ## Nguyên tắc phát triển
-- Không chỉnh sửa website cũ \`https://sansalecunglong.github.io/hoc-tieng-anh/\`.
+- Không chỉnh sửa website cũ `https://sansalecunglong.github.io/hoc-tieng-anh/`.
 - Không triển khai dịch vụ trả phí hoặc lưu bí mật truy cập trong mã nguồn.
-- Không gộp nhánh thử nghiệm vào \`main\` nếu chưa có xác nhận rõ ràng.
+- Không gộp nhánh thử nghiệm vào `main` nếu chưa có xác nhận rõ ràng.

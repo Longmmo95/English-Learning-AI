@@ -1,6 +1,8 @@
 """Optional OpenPronounce adapter; keeps the core API lightweight."""
 from __future__ import annotations
 import importlib.util
+import math
+import numbers
 import os
 import tempfile
 from pathlib import Path
@@ -33,6 +35,22 @@ def engine_status() -> dict:
     }
 
 
+def validate_engine_result(result: object) -> dict:
+    """Reject malformed model output so the API never publishes a bogus score."""
+    if not isinstance(result, dict):
+        raise RuntimeError("Engine trả về dữ liệu không đúng định dạng.")
+    score = result.get("score")
+    if isinstance(score, bool) or not isinstance(score, numbers.Real):
+        raise RuntimeError("Engine không trả về điểm số dạng số.")
+    score = float(score)
+    if not math.isfinite(score) or not 0 <= score <= 100:
+        raise RuntimeError("Engine trả về điểm số ngoài phạm vi 0–100.")
+    differences = result.get("differences")
+    if not isinstance(differences, dict) or not isinstance(differences.get("errors"), list):
+        raise RuntimeError("Engine không trả về danh sách lỗi phát âm hợp lệ.")
+    result["score"] = score
+    return result
+
 def analyze_recording(audio_bytes: bytes, filename: str, expected_text: str) -> dict:
     """Run real acoustic/phoneme analysis; never synthesize a fallback score."""
     if not audio_bytes:
@@ -60,9 +78,7 @@ def analyze_recording(audio_bytes: bytes, filename: str, expected_text: str) -> 
             temp_path = audio_file.name
         waveform = load_audio(temp_path)
         result = compare_audio_with_text(waveform, expected_text, lang="en")
-        if not isinstance(result, dict) or "score" not in result or "differences" not in result:
-            raise RuntimeError("Engine trả về dữ liệu không đúng định dạng.")
-        return result
+        return validate_engine_result(result)
     finally:
         if temp_path and os.path.exists(temp_path):
             os.remove(temp_path)
