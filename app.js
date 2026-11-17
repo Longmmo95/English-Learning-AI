@@ -114,7 +114,7 @@ function speaking(){
    const heard=event.results[0][0].transcript,expected=normalizeWords(current().text),actual=normalizeWords(heard);
    const matches=expected.map((word,i)=>({word,matched:actual[i]===word}));
    const detail=matches.map(x=>'<span class="'+(x.matched?"word-match":"word-miss")+'">'+safe(x.word)+'</span>').join(" ");
-   result.innerHTML="<b>Bạn vừa nói:</b><p>"+safe(heard)+"</p><b>Đối chiếu văn bản:</b><p>"+detail+"</p><p class=\\"muted\\">Khớp "+matches.filter(x=>x.matched).length+"/"+expected.length+" từ. Đây chỉ là nhận diện chữ, không phải điểm phát âm.</p>";
+   result.innerHTML="<b>Bạn vừa nói:</b><p>"+safe(heard)+"</p><b>Đối chiếu văn bản:</b><p>"+detail+"</p><p class=\"muted\">Khớp "+matches.filter(x=>x.matched).length+"/"+expected.length+" từ. Đây chỉ là nhận diện chữ, không phải điểm phát âm.</p>";
    result.classList.remove("hidden");status.textContent="Đã đối chiếu bằng trình duyệt.";markStudyDay();
   };
   recognition.onerror=event=>{status.textContent="Không nhận diện được giọng nói: "+event.error};
