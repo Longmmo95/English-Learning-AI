@@ -42,7 +42,7 @@ function say(text){
 function show(name){
  document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.view===name));
  [".hero",".stats",".columns"].forEach(s=>$(s).classList.toggle("hidden",name!=="home"));box.classList.toggle("hidden",name==="home");
- const titles={home:["Chào bạn! ✦","Mỗi ngày tiến bộ một chút. Hôm nay mình cùng học nhé!"],path:["Lộ trình học","Học từng chủ đề nhỏ, đi từ dễ đến khó."],vocabulary:["Từ vựng","Nghe, đọc và ghi nhớ những từ thông dụng."],speaking:["Luyện nói","Nghe mẫu, nói theo và xem từ nào được trình duyệt nhận diện."],review:["Ôn tập","Kiểm tra nhanh kiến thức từ cả ba bài học."],flashcards:["Thẻ ghi nhớ","Ôn từ vựng bằng cách tự nhớ nghĩa trước khi lật thẻ."]};
+ const titles={home:["Chào bạn! ✦","Mỗi ngày tiến bộ một chút. Hôm nay mình cùng học nhé!"],path:["Lộ trình học","Học từng chủ đề nhỏ, đi từ dễ đến khó."],vocabulary:["Từ vựng","Nghe, đọc và ghi nhớ những từ thông dụng."],speaking:["Luyện nói","Nghe mẫu, nói theo và xem từ nào được trình duyệt nhận diện."],review:["Ôn tập","Kiểm tra nhanh kiến thức từ cả sáu chủ đề."],flashcards:["Thẻ ghi nhớ","Ôn từ vựng bằng cách tự nhớ nghĩa trước khi lật thẻ."]};
  $("#heading").textContent=titles[name][0];$("#subheading").textContent=titles[name][1];
  if(name==="path")path();if(name==="vocabulary")vocabulary();if(name==="speaking")speaking();if(name==="review")review();
 }
@@ -161,7 +161,7 @@ function speaking(){
 function review(){
  const all=lessons.flatMap(l=>l.words.map(w=>({question:"“"+w[0]+"” có nghĩa là gì?",answer:w[1],lesson:l.title})));
  const questions=[...all].sort(()=>Math.random()-.5).slice(0,8);let score=0,answered=0;
- box.innerHTML='<h2>Ôn tập từ vựng A1</h2><p class="muted">8 câu hỏi ngắn, lấy từ cả ba bài học.</p>'+
+ box.innerHTML='<h2>Ôn tập từ vựng A1</h2><p class="muted">8 câu hỏi ngắn, lấy từ cả sáu chủ đề.</p>'+
  questions.map((q,i)=>{
   const distractors=[...new Set(all.filter(x=>x.answer!==q.answer).map(x=>x.answer))].sort(()=>Math.random()-.5).slice(0,2);
   const options=[q.answer,...distractors].sort(()=>Math.random()-.5);
