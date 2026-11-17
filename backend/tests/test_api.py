@@ -115,3 +115,27 @@ def test_pronunciation_adapter_rejects_long_text_without_model():
         assert "300 ký tự" in str(exc)
     else:
         raise AssertionError("Long text must be rejected")
+
+
+
+def test_cors_allows_the_published_frontend():
+    response = client.options(
+        "/api/v1/pronunciation/status",
+        headers={
+            "Origin": "https://longmmo95.github.io",
+            "Access-Control-Request-Method": "GET",
+        },
+    )
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == "https://longmmo95.github.io"
+
+
+def test_cors_rejects_unlisted_origins():
+    response = client.options(
+        "/api/v1/pronunciation/status",
+        headers={
+            "Origin": "https://untrusted.example",
+            "Access-Control-Request-Method": "GET",
+        },
+    )
+    assert "access-control-allow-origin" not in response.headers
