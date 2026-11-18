@@ -75,7 +75,7 @@ python -m pytest -q
 - [x] Lộ trình học, từ vựng, luyện nghe-nói theo mẫu và bài ôn tập 6 câu.
 - [x] Tiến độ hoàn thành được cộng dồn; nếu trình duyệt chặn localStorage, tiến độ chỉ được giữ trong phiên tab hiện tại.
 - [x] FastAPI cung cấp health check, danh sách/chi tiết bài học và trạng thái tính năng phát âm.
-- [ ] Nội dung hiện mới là ba bài mẫu, chưa bao phủ đầy đủ phạm vi A1.
+- [ ] Nội dung hiện mới là bốn bài mẫu, chưa bao phủ đầy đủ phạm vi A1.
 - [ ] Chưa có tài khoản hoặc đồng bộ tiến độ giữa các thiết bị.
 - [ ] Chưa ghi âm, nhận diện, căn chỉnh hoặc chấm phát âm từng từ. Endpoint trạng thái luôn báo chưa khả dụng cho đến khi có engine thật.
 
