@@ -41,11 +41,22 @@ def test_unknown_lesson_returns_404():
     assert client.get("/api/v1/lessons/not-real").status_code == 404
 
 
-def test_pronunciation_is_not_faked():
+def test_pronunciation_status_reports_optional_engine():
     result = client.get("/api/v1/pronunciation/status").json()
-    assert result["available"] is False
-    assert result["granularity"] == "word"
-    assert "Không trả về điểm số giả" in result["message"]
+    assert "available" in result
+    if result["available"]:
+        assert result["engine"] == "OpenPronounce"
+    else:
+        assert "chưa cài engine" in result["message"].lower()
+
+
+def test_pronunciation_rejects_unsupported_audio_format():
+    response = client.post(
+        "/api/v1/pronunciation/assess",
+        data={"expected_text": "Hello"},
+        files={"audio": ("recording.txt", b"not audio", "text/plain")},
+    )
+    assert response.status_code == 415
 
 
 def test_food_and_drinks_lesson_has_eight_words_and_five_phrases():
