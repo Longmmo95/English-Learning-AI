@@ -5,3 +5,9 @@
 .vocab-search{display:block;width:100%;max-width:560px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);font:inherit;outline:none}
 .vocab-search:focus{border-color:var(--blue);box-shadow:0 0 0 3px #566be81a}
 .empty-state{padding:20px;border:1px dashed var(--line);border-radius:10px;color:var(--muted);font-size:12px;text-align:center}
+
+.pron-controls{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
+.pron-controls button:disabled{opacity:.5;cursor:not-allowed}
+.pron-score{display:block;font-size:34px;color:var(--blue);margin:8px 0}
+.pron-error{padding:9px 0;border-top:1px solid var(--line)}
+.pron-error small{display:block;color:var(--muted);margin-top:4px}
