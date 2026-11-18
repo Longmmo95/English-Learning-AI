@@ -39,10 +39,69 @@ function vocabulary(){
   render();
 }function speaking(){
   const phrases=lessons.flatMap(l=>l.phrases.map(p=>({lesson:l.title,phrase:p})));
-  box.innerHTML='<h2>Nghe và nói theo</h2><p class="muted">Nghe mẫu rồi tự lặp lại thành tiếng.</p>'+
-    phrases.map(x=>'<div class="word"><small>'+x.lesson+'</small><b>'+x.phrase[0]+'</b><small>'+x.phrase[1]+'</small><button class="action" data-say="'+x.phrase[0]+'">▶ Nghe mẫu</button></div>').join("")+
-    '<p><b>Chấm phát âm AI:</b> Chưa khả dụng. Ứng dụng không ghi âm, không căn chỉnh âm thanh và không tạo điểm số giả.</p>';
-  box.querySelectorAll("[data-say]").forEach(b=>b.onclick=()=>say(b.dataset.say));
+  const apiSaved=(()=>{try{return localStorage.getItem("ela-api-base")||""}catch(e){return ""}})();
+  box.innerHTML='<h2>Luyện nói & chấm phát âm</h2><p class="muted">Chọn câu, nghe mẫu, ghi âm giọng đọc của bạn và gửi lên backend để mô hình phân tích.</p>'+
+    '<label class="search-label" for="pron-api">Địa chỉ backend (API)</label><input id="pron-api" class="vocab-search" type="url" placeholder="Ví dụ: https://api-ten-mien-cua-ban.com" value="'+apiSaved.replace(/&/g,"&amp;").replace(/"/g,"&quot;")+'">'+
+    '<small id="pron-status" class="muted" aria-live="polite">Đang kiểm tra engine chấm phát âm...</small>'+
+    '<label class="search-label" for="pron-target">Câu luyện tập</label><select id="pron-target" class="vocab-search">'+
+    phrases.map((x,i)=>'<option value="'+i+'">'+x.phrase[0].replace(/</g,"&lt;")+' — '+x.lesson+'</option>').join("")+'</select>'+
+    '<div class="word"><b id="pron-english">'+phrases[0].phrase[0]+'</b><small id="pron-vietnamese">'+phrases[0].phrase[1]+'</small><button class="action" id="pron-listen">▶ Nghe mẫu</button></div>'+
+    '<div class="pron-controls"><button class="primary" id="pron-record">● Bắt đầu ghi âm</button><button class="action" id="pron-stop" disabled>Dừng & chấm điểm</button></div>'+
+    '<p id="pron-feedback" class="muted" aria-live="polite">Cho phép trình duyệt truy cập micro khi được hỏi. Bản ghi chỉ được gửi đến backend bạn cấu hình để phân tích.</p>'+
+    '<div id="pron-result"></div>';
+  const apiInput=$("#pron-api"),target=$("#pron-target"),record=$("#pron-record"),stop=$("#pron-stop"),feedback=$("#pron-feedback"),result=$("#pron-result"),status=$("#pron-status");
+  let recorder=null,stream=null,chunks=[];
+  function apiBase(){return apiInput.value.trim().replace(/\/+$/,"")}
+  function saveApi(){try{localStorage.setItem("ela-api-base",apiBase())}catch(e){}}
+  async function checkEngine(){
+    saveApi();
+    try{
+      const response=await fetch(apiBase()+"/api/v1/pronunciation/status");
+      if(!response.ok)throw new Error("HTTP "+response.status);
+      const data=await response.json();
+      status.textContent=data.available?"✓ Engine "+(data.engine||"đã cài")+" sẵn sàng (mô hình có thể cần tải khi chấm lần đầu).":data.message;
+    }catch(e){status.textContent="Chưa kết nối được backend. Hãy nhập địa chỉ máy chủ FastAPI đã cài engine."; }
+  }
+  function selected(){return phrases[Number(target.value)]}
+  function refreshTarget(){const x=selected();$("#pron-english").textContent=x.phrase[0];$("#pron-vietnamese").textContent=x.phrase[1];result.innerHTML=""}
+  target.onchange=refreshTarget;
+  apiInput.onchange=checkEngine;
+  $("#pron-listen").onclick=()=>say(selected().phrase[0]);
+  record.onclick=async()=>{
+    if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){feedback.textContent="Trình duyệt này chưa hỗ trợ ghi âm. Hãy thử Chrome, Edge hoặc Safari mới trên HTTPS.";return}
+    try{
+      saveApi();stream=await navigator.mediaDevices.getUserMedia({audio:true});
+      const preferred=["audio/webm;codecs=opus","audio/webm","audio/mp4"].find(t=>MediaRecorder.isTypeSupported(t));
+      recorder=preferred?new MediaRecorder(stream,{mimeType:preferred}):new MediaRecorder(stream);
+      chunks=[];recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};
+      recorder.onstop=async()=>{
+        stream.getTracks().forEach(t=>t.stop());stream=null;
+        const blob=new Blob(chunks,{type:recorder.mimeType||"audio/webm"});
+        const ext=blob.type.includes("mp4")?".m4a":blob.type.includes("ogg")?".ogg":blob.type.includes("wav")?".wav":".webm";
+        await submitRecording(blob,ext);
+      };
+      recorder.start();record.disabled=true;stop.disabled=false;
+      feedback.textContent="Đang ghi âm... Hãy đọc câu mẫu rõ ràng, sau đó bấm Dừng & chấm điểm.";
+    }catch(e){feedback.textContent="Không mở được micro. Hãy cấp quyền micro và kiểm tra kết nối HTTPS.";if(stream)stream.getTracks().forEach(t=>t.stop())}
+  };
+  stop.onclick=()=>{if(recorder&&recorder.state==="recording"){stop.disabled=true;record.disabled=false;recorder.stop()}};
+  async function submitRecording(blob,ext){
+    if(!blob.size){feedback.textContent="Không thu được âm thanh. Hãy ghi âm lại.";return}
+    const form=new FormData();form.append("audio",blob,"recording"+ext);form.append("expected_text",selected().phrase[0]);
+    feedback.textContent="Đang gửi bản ghi và phân tích bằng mô hình phát âm...";
+    result.innerHTML="";
+    try{
+      const response=await fetch(apiBase()+"/api/v1/pronunciation/assess",{method:"POST",body:form});
+      const data=await response.json();
+      if(!response.ok)throw new Error(data.detail||"Backend không thể chấm bản ghi.");
+      const errors=Array.isArray(data.errors)?data.errors:[];
+      result.innerHTML='<div class="word"><small>ĐIỂM THAM KHẢO CỦA MÔ HÌNH</small><strong class="pron-score">'+Number(data.score).toFixed(1)+'/100</strong><p><b>Mô hình nghe được:</b> '+(data.transcription||"Không có bản chép lời")+'</p><p>'+ (errors.length?"Các từ cần luyện lại:":"Không phát hiện từ lỗi theo ngưỡng mô hình.")+'</p>'+
+        errors.map(e=>'<div class="pron-error"><b>'+String(e.word||"").replace(/</g,"&lt;")+'</b><small>Mong đợi: '+String(e.expected||"—")+' · Nghe được: '+String(e.actual||"không rõ")+'</small></div>').join("")+
+        '<small>'+String(data.message||"")+'</small></div>';
+      feedback.textContent="Đã phân tích xong. Điểm chỉ mang tính tham khảo, không phải chứng nhận trình độ.";
+    }catch(e){feedback.textContent=e.message+" Kiểm tra backend và thử lại."}
+  }
+  checkEngine();
 }
 function review(){
   const qs=[
