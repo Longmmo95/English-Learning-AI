@@ -1,90 +1,48 @@
 # English Learning AI
 
-Nền tảng học tiếng Anh độc lập, ưu tiên người Việt mới bắt đầu (A1). Dự án này nằm trong repository riêng `Longmmo95/English-Learning-AI`.
+Website học tiếng Anh độc lập cho người Việt mới bắt đầu (A1), nằm trong repository riêng `Longmmo95/English-Learning-AI`.
 
-## Phạm vi an toàn
+## Bản xem trước
+- Website: https://longmmo95.github.io/English-Learning-AI/
+- Nhánh thử nghiệm: `feature/interactive-flashcards`
+- Mọi thay đổi hiện được kiểm tra trên nhánh thử nghiệm; chưa tự động gộp vào `main`.
 
-- Không phụ thuộc và không chỉnh sửa website cũ: https://sansalecunglong.github.io/hoc-tieng-anh/
-- Chỉ phát triển trong repository này.
-- Không hiển thị điểm phát âm giả. Chấm phát âm theo từng từ chỉ được bật sau khi có mô hình nhận diện giọng nói và căn chỉnh âm thanh thực sự.
+## Tính năng hiện có
+- [x] Trang tổng quan và lộ trình 6 bài học A1: chào hỏi, gia đình, công việc hằng ngày, đồ ăn & thức uống, mua sắm, địa điểm & chỉ đường.
+- [x] Từ vựng, phiên âm IPA, mẫu câu song ngữ và đọc mẫu bằng Web Speech API.
+- [x] Thẻ ghi nhớ: lật thẻ, lọc từ chưa nhớ, xáo trộn, đặt lại tiến độ và lưu cục bộ.
+- [x] Luyện nói bằng nhận diện giọng nói có sẵn của trình duyệt; đối chiếu văn bản theo từng từ.
+- [x] Bài ôn tập từ vựng, tiến độ bài học, thời gian học và chuỗi ngày học được lưu trên thiết bị này.
+- [x] API FastAPI cho danh sách/chi tiết bài học và kiểm thử tự động.
+- [x] Adapter API tùy chọn cho OpenPronounce: nhận tệp ghi âm, trả phân tích âm vị khi engine được cài.
+- [x] Giới hạn 10 yêu cầu phân tích/phút/IP trên mỗi tiến trình backend; từ chối quá giới hạn bằng HTTP 429.
+- [x] Docker chạy bằng tài khoản không phải root, có health check và được build/smoke-test trong CI.
+- [ ] Cài model weights và triển khai backend HTTPS riêng để bật chấm âm thanh thực tế.
 
-## Cấu trúc hiện tại
+## Giới hạn cần biết
+- Luyện nói trên trình duyệt vẫn là chế độ dự phòng. API chấm âm thanh dùng OpenPronounce khi cài optional engine; cần backend riêng, ffmpeg/espeak-ng và khoảng 2,4 GB model weights.
+- API FastAPI chưa được triển khai lên máy chủ công khai; GitHub Pages hiện chỉ xuất bản frontend tĩnh.
+- Hugging Face ZeroGPU là tùy chọn Gradio; chỉ dùng nếu tài khoản cá nhân miễn phí đủ điều kiện và còn quota. Theo tài liệu Hugging Face hiện tại (18/11/2026), tài khoản cá nhân ở trạng thái tốt, đã xác minh email và có tuổi tài khoản trên 30 ngày có thể host tối đa 2 ZeroGPU Spaces; quota Free là 5 phút GPU/ngày. ZeroGPU chỉ hỗ trợ Gradio. Không nâng cấp PRO, không mua/nạp credits và không bật phần cứng trả phí; nếu hết quota hoặc không đủ điều kiện thì dừng, không phát sinh chi phí.
+- CI kiểm tra cú pháp/tích hợp frontend, API tests, cấu hình Gradio và build/smoke-test Docker. Test backend cài thêm `httpx2` trong `requirements-dev.txt` để tránh đường tương thích cũ của Starlette TestClient.
+- Rate limit trong bộ nhớ chỉ bảo vệ từng tiến trình; triển khai nhiều worker/instance cần thêm giới hạn dùng chung tại reverse proxy/API gateway. CORS không thay thế xác thực.
+- Dữ liệu tiến độ đang lưu trong trình duyệt hiện tại, chưa có tài khoản hoặc đồng bộ đa thiết bị.
+- Cần HTTPS và quyền micro để dùng chức năng nhận diện giọng nói; hỗ trợ tùy trình duyệt.
 
-```text
-.
-├── index.html                 # Giao diện học tập
-├── styles.css                 # Responsive styles
-├── app.js                     # Điều hướng, bài học, nghe mẫu, ôn tập
-└── backend/
-    ├── requirements.txt
-    ├── app/
-    │   ├── __init__.py
-    │   └── main.py             # FastAPI endpoints
-    └── tests/
-        └── test_api.py
-```
-
-## Chạy giao diện frontend
-
-Có thể mở trực tiếp `index.html` trên trình duyệt. Để chạy qua máy chủ tĩnh trong thư mục gốc:
-
-```bash
-python -m http.server 8080
-```
-
-Sau đó mở http://localhost:8080.
-
-## Chạy backend FastAPI
-
-Yêu cầu Python 3.10 trở lên.
-
+## Chạy backend cục bộ
 ```bash
 cd backend
-python -m venv .venv
-```
-
-Kích hoạt môi trường ảo:
-
-- Windows PowerShell: `.venv\\Scripts\\Activate.ps1`
-- macOS/Linux: `source .venv/bin/activate`
-
-Cài thư viện và chạy API:
-
-```bash
 pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
-- Health check: http://127.0.0.1:8000/health
-- Danh sách bài học: http://127.0.0.1:8000/api/v1/lessons
-- Tài liệu API: http://127.0.0.1:8000/docs
-
-## Chạy kiểm thử backend
-
-Đứng trong thư mục `backend`, sau khi cài dependencies:
-
+## Kiểm thử backend
 ```bash
+cd backend
+pip install -r requirements-dev.txt
 python -m pytest -q
 ```
 
-## Trạng thái tính năng
-
-- [x] Dashboard responsive cơ bản.
-- [x] Bài học A1 mẫu, từ vựng và mẫu câu.
-- [x] Nghe mẫu bằng Web Speech API của trình duyệt (giọng đọc phụ thuộc thiết bị/trình duyệt).
-- [x] Ôn tập câu hỏi cơ bản và lưu trạng thái bài học trên thiết bị.
-- [x] API FastAPI cơ bản và kiểm thử endpoint.
-- [ ] Tài khoản người học và đồng bộ tiến độ trên nhiều thiết bị.
-- [ ] Ghi âm giọng nói và chấm phát âm AI.
-- [ ] Nhận diện, căn chỉnh và phản hồi phát âm ở cấp độ từng từ.
-
-## Lộ trình tiếp theo
-
-1. Mở rộng nội dung A1 có hệ thống, bổ sung nghe hiểu và bài tập tương tác.
-2. Kiểm tra giao diện thực tế trên điện thoại và máy tính.
-3. Hoàn thiện lưu tiến độ và kết nối frontend với backend.
-4. Đánh giá mô hình mã nguồn mở cho ASR/alignment; chỉ công bố điểm khi kết quả được kiểm chứng.
-
-## Lưu ý triển khai
-
-Backend hiện là nền tảng thử nghiệm. CORS đang mở cho phát triển; trước khi triển khai thật cần giới hạn `allow_origins` về đúng domain frontend, bổ sung cấu hình bảo mật, logging và giới hạn tải lên âm thanh.
+## Nguyên tắc phát triển
+- Không chỉnh sửa website cũ `https://sansalecunglong.github.io/hoc-tieng-anh/`.
+- Không triển khai dịch vụ trả phí hoặc lưu bí mật truy cập trong mã nguồn.
+- Không gộp nhánh thử nghiệm vào `main` nếu chưa có xác nhận rõ ràng.

@@ -1,0 +1,143 @@
+name: Validate English Learning AI
+
+on:
+  push:
+    branches:
+      - feature/interactive-flashcards
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend:
+    name: Frontend syntax and integration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          package-manager-cache: false
+      - name: Check JavaScript syntax
+        run: |
+          node --check app.js
+          node --check flashcards.js
+      - name: Check frontend integration
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          html = Path("index.html").read_text(encoding="utf-8")
+          app = Path("app.js").read_text(encoding="utf-8")
+          cards = Path("flashcards.js").read_text(encoding="utf-8")
+          assert 'data-view="flashcards"' in html
+          assert 'manifest.webmanifest' in html and 'icon.svg' in html
+          assert 'serviceWorker.register("./sw.js")' in app
+          sw = Path("sw.js").read_text(encoding="utf-8")
+          assert "CACHE_NAME" in sw and 'url.pathname.includes("/api/")' in sw
+          assert 'flashcards.js' in html and 'flashcards.css' in html
+          assert 'flashcards:[' in app
+          assert 'daily-routine' in app
+          assert 'SpeechRecognition' in app or 'MediaRecorder' in app
+          assert 'normalizeWords' in app
+          assert 'MediaRecorder' in app
+          assert "recordingTimeout=setTimeout" in app
+          assert "window.stopSpeakingCapture" in app
+          assert "if(discardRecording)" in app
+          assert '/api/v1/pronunciation/analyze' in app
+          assert 'ela-pronunciation-api-url' in app
+          assert 'ela-flashcards-known' in cards
+          assert 'localStorage' in cards
+          assert 'toggle-review' in cards and 'shuffle' in cards and 'reset' in cards
+          assert 'reviewOnly' in cards and 'known.clear()' in cards
+          assert 'if (reviewOnly) { if (index >= deck().length) index = 0; }' in cards
+          assert 'data-lesson-id="daily-routine"' in html
+          print("Frontend integration checks passed.")
+          PY
+
+  backend:
+    name: Backend API tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: |
+            backend/requirements.txt
+            backend/requirements-dev.txt
+      - name: Install development dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements-dev.txt
+      - name: Run API tests
+        working-directory: backend
+        run: python -m pytest -q
+
+  huggingface-adapter:
+    name: Hugging Face Gradio adapter syntax
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Compile Gradio app and validate Space metadata
+        run: |
+          python -m py_compile huggingface-space/app.py
+          python - <<'PY'
+          from pathlib import Path
+          readme = Path("huggingface-space/README.md").read_text(encoding="utf-8")
+          requirements = Path("huggingface-space/requirements.txt").read_text(encoding="utf-8")
+          app = Path("huggingface-space/app.py").read_text(encoding="utf-8")
+          assert "sdk: gradio" in readme
+          assert "python_version: \"3.12\"" in readme
+          assert "openpronounce==0.4.0" in requirements
+          assert "@spaces.GPU" in app
+          assert "compare_audio_with_text" in app
+          assert "demo.queue(default_concurrency_limit=1, max_size=10)" in app
+          assert "score = result.get" in app
+          dockerfile = Path("backend/Dockerfile.pronunciation").read_text(encoding="utf-8")
+          assert "USER appuser" in dockerfile
+          assert "HEALTHCHECK" in dockerfile
+          print("Hugging Face and Docker configuration checks passed.")
+          PY
+
+  docker:
+    name: Docker build and API smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Build CPU pronunciation API image
+        run: docker build --file backend/Dockerfile.pronunciation --tag english-learning-ai-api:ci .
+      - name: Start API container and verify health endpoint
+        run: |
+          docker run --detach --name ela-api-ci --publish 127.0.0.1:8000:8000 english-learning-ai-api:ci
+          cleanup() {
+            docker logs ela-api-ci || true
+            docker rm --force ela-api-ci || true
+          }
+          trap cleanup EXIT
+          for attempt in $(seq 1 45); do
+            if curl --fail --silent http://127.0.0.1:8000/health; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "API did not become healthy within 90 seconds."
+          exit 1

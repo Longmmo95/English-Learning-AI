@@ -1,0 +1,3 @@
+gradio>=4.44
+spaces>=0.42.0
+openpronounce==0.4.0

@@ -1,0 +1,28 @@
+# Build from the repository root:
+# docker build -f backend/Dockerfile.pronunciation -t english-learning-ai-api .
+FROM python:3.11-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    OPENPRONOUNCE_DEVICE=cpu \
+    HF_HOME=/models/huggingface
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ffmpeg espeak-ng libsndfile1 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY backend/requirements.txt /app/requirements.txt
+RUN python -m pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu \
+    && pip install --no-cache-dir -r /app/requirements.txt \
+    && pip install --no-cache-dir openpronounce==0.4.0
+
+RUN useradd --create-home --uid 10001 appuser && mkdir -p /models/huggingface && chown -R appuser:appuser /app /models
+
+COPY --chown=appuser:appuser backend/app /app/app
+USER appuser
+VOLUME ["/models"]
+EXPOSE 8000
+HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)" || exit 1
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
