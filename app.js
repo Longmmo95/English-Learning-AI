@@ -35,10 +35,12 @@ function review(){
     ["'Mother' có nghĩa là gì?",["Bố","Chị gái","Mẹ"],2],
     ["'I have one brother' có nghĩa là gì?",["Tôi có một người anh/em trai","Tôi có một người chị/em gái","Tôi sống một mình"],0],
     ["'Breakfast' là bữa ăn nào?",["Bữa tối","Bữa sáng","Bữa trưa"],1],
-    ["'I go to bed at ten' có nghĩa là gì?",["Tôi thức dậy lúc mười giờ","Tôi đi làm lúc mười giờ","Tôi đi ngủ lúc mười giờ"],2]
+    ["'I go to bed at ten' có nghĩa là gì?",["Tôi thức dậy lúc mười giờ","Tôi đi làm lúc mười giờ","Tôi đi ngủ lúc mười giờ"],2],
+    ["'Water' có nghĩa là gì?",["Sữa","Nước","Cơm"],1],
+    ["'I like apples' có nghĩa là gì?",["Tôi thích táo","Tôi ăn bánh mì","Tôi uống nước"],0]
   ];
   let score=0,answered=0;
-  box.innerHTML='<h2>Ôn tập tổng hợp</h2><p class="muted">'+qs.length+' câu hỏi từ cả ba bài học.</p>'+
+  box.innerHTML='<h2>Ôn tập tổng hợp</h2><p class="muted">'+qs.length+' câu hỏi từ cả bốn bài học.</p>'+
     qs.map((q,i)=>'<div class="word"><b>'+(i+1)+'. '+q[0]+'</b><div>'+q[1].map((a,j)=>'<button class="action" data-q="'+i+'" data-a="'+j+'">'+a+'</button>').join("")+'</div><small id="answer'+i+'" aria-live="polite"></small></div>').join("")+
     '<p id="review-result" aria-live="polite">Hãy chọn đáp án cho từng câu.</p>';
   box.querySelectorAll("[data-q]").forEach(b=>b.onclick=()=>{
