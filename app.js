@@ -50,6 +50,7 @@ function vocabulary(){
     '<p id="pron-feedback" class="muted" aria-live="polite">Cho phép trình duyệt truy cập micro khi được hỏi. Bản ghi chỉ được gửi đến backend bạn cấu hình để phân tích.</p>'+
     '<div id="pron-result"></div>';
   const apiInput=$("#pron-api"),target=$("#pron-target"),record=$("#pron-record"),stop=$("#pron-stop"),feedback=$("#pron-feedback"),result=$("#pron-result"),status=$("#pron-status");
+  const escapeHtml=value=>String(value??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;");
   let recorder=null,stream=null,chunks=[];
   function apiBase(){return apiInput.value.trim().replace(/\/+$/,"")}
   function saveApi(){try{localStorage.setItem("ela-api-base",apiBase())}catch(e){}}
@@ -95,9 +96,9 @@ function vocabulary(){
       const data=await response.json();
       if(!response.ok)throw new Error(data.detail||"Backend không thể chấm bản ghi.");
       const errors=Array.isArray(data.errors)?data.errors:[];
-      result.innerHTML='<div class="word"><small>ĐIỂM THAM KHẢO CỦA MÔ HÌNH</small><strong class="pron-score">'+Number(data.score).toFixed(1)+'/100</strong><p><b>Mô hình nghe được:</b> '+(data.transcription||"Không có bản chép lời")+'</p><p>'+ (errors.length?"Các từ cần luyện lại:":"Không phát hiện từ lỗi theo ngưỡng mô hình.")+'</p>'+
-        errors.map(e=>'<div class="pron-error"><b>'+String(e.word||"").replace(/</g,"&lt;")+'</b><small>Mong đợi: '+String(e.expected||"—")+' · Nghe được: '+String(e.actual||"không rõ")+'</small></div>').join("")+
-        '<small>'+String(data.message||"")+'</small></div>';
+      result.innerHTML='<div class="word"><small>ĐIỂM THAM KHẢO CỦA MÔ HÌNH</small><strong class="pron-score">'+Number(data.score).toFixed(1)+'/100</strong><p><b>Mô hình nghe được:</b> '+escapeHtml(data.transcription||"Không có bản chép lời")+'</p><p>'+ (errors.length?"Các từ cần luyện lại:":"Không phát hiện từ lỗi theo ngưỡng mô hình.")+'</p>'+
+        errors.map(e=>'<div class="pron-error"><b>'+escapeHtml(e.word||"")+'</b><small>Mong đợi: '+escapeHtml(e.expected||"—")+' · Nghe được: '+escapeHtml(e.actual||"không rõ")+'</small></div>').join("")+
+        '<small>'+escapeHtml(data.message||"")+'</small></div>';
       feedback.textContent="Đã phân tích xong. Điểm chỉ mang tính tham khảo, không phải chứng nhận trình độ.";
     }catch(e){feedback.textContent=e.message+" Kiểm tra backend và thử lại."}
   }
