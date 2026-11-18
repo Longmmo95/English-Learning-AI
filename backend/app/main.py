@@ -261,12 +261,6 @@ def get_lesson(lesson_id: str):
             return lesson
     raise HTTPException(status_code=404, detail="Không tìm thấy bài học")
 
-@app.get("/api/v1/pronunciation/status")
-def pronunciation_status():
-    return {"available": False, "granularity": "word",
-            "message": "Chưa tích hợp mô hình nhận diện và căn chỉnh phát âm. Không trả về điểm số giả."}
-
-
 MAX_AUDIO_BYTES = 12 * 1024 * 1024
 ALLOWED_AUDIO_SUFFIXES = {".wav", ".mp3", ".m4a", ".webm", ".ogg"}
 
