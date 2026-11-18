@@ -12,7 +12,7 @@ Website học tiếng Anh độc lập cho người Việt mới bắt đầu (A
 - [x] Từ vựng, phiên âm IPA, mẫu câu song ngữ và đọc mẫu bằng Web Speech API.
 - [x] Thẻ ghi nhớ: lật thẻ, lọc từ chưa nhớ, xáo trộn, đặt lại tiến độ và lưu cục bộ.
 - [x] Luyện nói bằng nhận diện giọng nói có sẵn của trình duyệt; đối chiếu văn bản theo từng từ.
-- [x] Bài ôn tập từ vựng, tiến độ bài học, thời gian học và chuỗi ngày học được lưu trên thiết bị.
+- [x] Bài ôn tập từ vựng, tiến độ bài học, thời gian học và chuỗi ngày học được lưu trên thiết bị này.
 - [x] API FastAPI cho danh sách/chi tiết bài học và kiểm thử tự động.
 - [x] Adapter API tùy chọn cho OpenPronounce: nhận tệp ghi âm, trả phân tích âm vị khi engine được cài.
 - [x] Giới hạn 10 yêu cầu phân tích/phút/IP trên mỗi tiến trình backend; từ chối quá giới hạn bằng HTTP 429.
@@ -36,6 +36,7 @@ uvicorn app.main:app --reload
 ## Kiểm thử backend
 ```bash
 cd backend
+pip install -r requirements-dev.txt
 python -m pytest -q
 ```
 
