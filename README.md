@@ -52,6 +52,8 @@ Cài đặt và khởi chạy:
 
 ```bash
 pip install -r requirements.txt
+# Cài thêm engine chấm phát âm thật (tùy chọn, tải các thư viện/mô hình lớn)
+pip install -r requirements-pronunciation.txt
 uvicorn app.main:app --reload
 ```
 
@@ -77,7 +79,10 @@ python -m pytest -q
 - [x] FastAPI cung cấp health check, danh sách/chi tiết bài học và trạng thái tính năng phát âm.
 - [ ] Nội dung hiện mới là bốn bài mẫu, chưa bao phủ đầy đủ phạm vi A1.
 - [ ] Chưa có tài khoản hoặc đồng bộ tiến độ giữa các thiết bị.
-- [ ] Chưa ghi âm, nhận diện, căn chỉnh hoặc chấm phát âm từng từ. Endpoint trạng thái luôn báo chưa khả dụng cho đến khi có engine thật.
+- [x] Giao diện luyện nói có chọn câu, ghi âm bằng micro, gửi bản ghi lên FastAPI và hiển thị kết quả/âm vị lỗi khi backend có engine.
+- [x] Backend có endpoint tải âm thanh có giới hạn dung lượng, kiểm tra định dạng và gọi OpenPronounce; nếu engine chưa cài thì trả HTTP 503, không tạo điểm giả.
+- [ ] Engine OpenPronounce chưa được cài/chạy trong môi trường triển khai; cần cài `backend/requirements-pronunciation.txt`, tải checkpoint mô hình (khoảng 2,4 GB tổng) và kiểm thử trên giọng người Việt trước khi dùng thường xuyên.
+- [ ] Frontend tĩnh chưa có backend công khai. Trong mục Luyện nói, nhập URL máy chủ FastAPI đã cài engine vào ô “Địa chỉ backend (API)”; cần HTTPS để trình duyệt cho phép dùng micro.
 
 ## Nghiên cứu engine chấm phát âm (18/11/2026)
 
@@ -87,7 +92,7 @@ python -m pytest -q
 
 Ứng viên nghiên cứu thứ hai là [GOPT chính thức](https://github.com/YuanGongND/gopt), mô hình học thuật chấm nhiều cấp độ phoneme/từ/câu. Repo báo cáo PCC 0,549 ở cấp từ trên SpeechOcean762, nhưng quy trình cần đặc trưng GOP và pipeline dữ liệu/Kaldi; không phải thư viện cắm vào FastAPI là chạy ngay.
 
-Bước tích hợp dự kiến: tách engine thành dịch vụ tùy chọn; giới hạn dung lượng và thời lượng âm thanh; không lưu bản ghi mặc định; kiểm thử bằng bộ mẫu có nhiều giọng/độ nhiễu và nhãn người chấm; chỉ bật endpoint chấm điểm sau khi đánh giá độ chính xác và tỷ lệ báo nhầm đạt ngưỡng.
+Đã tạo adapter tùy chọn trong FastAPI: `GET /api/v1/pronunciation/status` kiểm tra package và `POST /api/v1/pronunciation/assess` nhận `audio` cùng `expected_text`. Bản ghi được xử lý tạm thời rồi xóa; giới hạn tải lên 12 MB; không lưu audio vào cơ sở dữ liệu. Cài engine bằng `pip install -r backend/requirements-pronunciation.txt` từ thư mục gốc (hoặc trong thư mục backend với đường dẫn tương ứng). OpenPronounce dùng hai checkpoint Wav2Vec2 khoảng 1,2 GB mỗi checkpoint, có thể tải ở lần chấm đầu. Engine chỉ hiệu chuẩn tiếng Anh trên tập đánh giá có sẵn; điểm số là tham khảo, chưa được xác thực riêng cho người học Việt Nam. Cần kiểm thử trên bộ giọng người Việt và đối chiếu người chấm trước khi coi điểm là đáng tin cậy.
 
 ## Lưu ý bảo mật và triển khai
 
