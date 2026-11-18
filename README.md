@@ -70,8 +70,8 @@ python -m pytest -q
 ## Trạng thái hiện tại
 
 - [x] Dashboard responsive; đã kiểm tra luồng giao diện trên Chromium ở kích thước 1440×900 và 390×844.
-- [x] Ba bài học A1 mẫu: chào hỏi, gia đình, công việc hằng ngày.
-- [x] 24 mục từ vựng và 14 mẫu câu; có nghe mẫu bằng Web Speech API (giọng đọc tùy trình duyệt/thiết bị).
+- [x] Bốn bài học A1 mẫu: chào hỏi, gia đình, công việc hằng ngày, đồ ăn & thức uống.
+- [x] 32 mục từ vựng và 19 mẫu câu; có nghe mẫu bằng Web Speech API (giọng đọc tùy trình duyệt/thiết bị).
 - [x] Lộ trình học, từ vựng, luyện nghe-nói theo mẫu và bài ôn tập 6 câu.
 - [x] Tiến độ hoàn thành được cộng dồn; nếu trình duyệt chặn localStorage, tiến độ chỉ được giữ trong phiên tab hiện tại.
 - [x] FastAPI cung cấp health check, danh sách/chi tiết bài học và trạng thái tính năng phát âm.
