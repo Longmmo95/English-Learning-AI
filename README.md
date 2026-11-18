@@ -79,6 +79,16 @@ python -m pytest -q
 - [ ] Chưa có tài khoản hoặc đồng bộ tiến độ giữa các thiết bị.
 - [ ] Chưa ghi âm, nhận diện, căn chỉnh hoặc chấm phát âm từng từ. Endpoint trạng thái luôn báo chưa khả dụng cho đến khi có engine thật.
 
+## Nghiên cứu engine chấm phát âm (18/11/2026)
+
+Ứng viên ưu tiên để thử nghiệm riêng là [OpenPronounce](https://github.com/OpenPronounce/OpenPronounce) (MIT, Python 3.10+). Tài liệu dự án mô tả so sánh âm thanh với câu mẫu, nhận diện phoneme bằng Wav2Vec2, căn chỉnh chuỗi âm và trả về các từ có lỗi kèm IPA mong đợi/được nhận diện. Chạy được trên CPU, nhưng lần đầu cần tải hai checkpoint khoảng 1,2 GB mỗi checkpoint và cài FFmpeg cùng espeak-ng.
+
+**Chưa tích hợp vào ứng dụng.** Tài liệu OpenPronounce nêu rõ chỉ tiếng Anh được hiệu chuẩn với đánh giá con người; mô hình có thể báo nhầm, đặc biệt với từ ngắn, giọng vùng miền và bản ghi nhiễu. Vì vậy chưa an toàn để đưa điểm số cho người học nếu chưa thử trên giọng người Việt và đối chiếu người chấm.
+
+Ứng viên nghiên cứu thứ hai là [GOPT chính thức](https://github.com/YuanGongND/gopt), mô hình học thuật chấm nhiều cấp độ phoneme/từ/câu. Repo báo cáo PCC 0,549 ở cấp từ trên SpeechOcean762, nhưng quy trình cần đặc trưng GOP và pipeline dữ liệu/Kaldi; không phải thư viện cắm vào FastAPI là chạy ngay.
+
+Bước tích hợp dự kiến: tách engine thành dịch vụ tùy chọn; giới hạn dung lượng và thời lượng âm thanh; không lưu bản ghi mặc định; kiểm thử bằng bộ mẫu có nhiều giọng/độ nhiễu và nhãn người chấm; chỉ bật endpoint chấm điểm sau khi đánh giá độ chính xác và tỷ lệ báo nhầm đạt ngưỡng.
+
 ## Lưu ý bảo mật và triển khai
 
 Backend hiện là nền tảng thử nghiệm. CORS đang mở (`allow_origins=["*"]`) cho phát triển; phải giới hạn về domain frontend được phép trước khi triển khai thật. Chưa triển khai công khai và chưa cấu hình dịch vụ lưu trữ/tài khoản.
