@@ -22,6 +22,8 @@ Website học tiếng Anh độc lập cho người Việt mới bắt đầu (A
 ## Giới hạn cần biết
 - Luyện nói trên trình duyệt vẫn là chế độ dự phòng. API chấm âm thanh dùng OpenPronounce khi cài optional engine; cần backend riêng, ffmpeg/espeak-ng và khoảng 2,4 GB model weights.
 - API FastAPI chưa được triển khai lên máy chủ công khai; GitHub Pages hiện chỉ xuất bản frontend tĩnh.
+- Hugging Face ZeroGPU là tùy chọn Gradio; chỉ dùng nếu tài khoản cá nhân miễn phí đủ điều kiện và còn quota. Theo tài liệu Hugging Face hiện tại (18/11/2026), tài khoản cá nhân ở trạng thái tốt, đã xác minh email và có tuổi tài khoản trên 30 ngày có thể host tối đa 2 ZeroGPU Spaces; quota Free là 5 phút GPU/ngày. ZeroGPU chỉ hỗ trợ Gradio. Không nâng cấp PRO, không mua/nạp credits và không bật phần cứng trả phí; nếu hết quota hoặc không đủ điều kiện thì dừng, không phát sinh chi phí.
+- CI kiểm tra cú pháp/tích hợp frontend, API tests, cấu hình Gradio và build/smoke-test Docker. Test backend cài thêm `httpx2` trong `requirements-dev.txt` để tránh đường tương thích cũ của Starlette TestClient.
 - Rate limit trong bộ nhớ chỉ bảo vệ từng tiến trình; triển khai nhiều worker/instance cần thêm giới hạn dùng chung tại reverse proxy/API gateway. CORS không thay thế xác thực.
 - Dữ liệu tiến độ đang lưu trong trình duyệt hiện tại, chưa có tài khoản hoặc đồng bộ đa thiết bị.
 - Cần HTTPS và quyền micro để dùng chức năng nhận diện giọng nói; hỗ trợ tùy trình duyệt.
