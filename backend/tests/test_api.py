@@ -15,9 +15,9 @@ def test_list_lessons_contains_three_a1_topics():
     response = client.get("/api/v1/lessons")
     assert response.status_code == 200
     payload = response.json()
-    assert payload["total"] == 3
+    assert payload["total"] == 4
     assert [item["id"] for item in payload["items"]] == [
-        "greetings", "family", "daily-routine"
+        "greetings", "family", "daily-routine", "food-drinks"
     ]
     assert all(item["level"] == "A1" for item in payload["items"])
 
@@ -46,3 +46,11 @@ def test_pronunciation_is_not_faked():
     assert result["available"] is False
     assert result["granularity"] == "word"
     assert "Không trả về điểm số giả" in result["message"]
+
+
+def test_food_and_drinks_lesson_has_eight_words_and_five_phrases():
+    lesson = client.get("/api/v1/lessons/food-drinks").json()
+    assert lesson["level"] == "A1"
+    assert len(lesson["vocabulary"]) == 8
+    assert len(lesson["phrases"]) == 5
+    assert lesson["vocabulary"][0]["word"] == "water"
