@@ -216,6 +216,29 @@ LESSONS = [
                 "meaning_vi": "Tôi đi ngủ lúc mười giờ."
             }
         ]
+    },
+    {
+        "id": "food-drinks",
+        "level": "A1",
+        "title": "Đồ ăn & thức uống",
+        "description": "Gọi tên món ăn, đồ uống và nói về sở thích đơn giản.",
+        "vocabulary": [
+            {"word": "water", "meaning_vi": "nước", "ipa": "/ˈwɔːtər/"},
+            {"word": "milk", "meaning_vi": "sữa", "ipa": "/mɪlk/"},
+            {"word": "bread", "meaning_vi": "bánh mì", "ipa": "/bred/"},
+            {"word": "rice", "meaning_vi": "cơm, gạo", "ipa": "/raɪs/"},
+            {"word": "apple", "meaning_vi": "quả táo", "ipa": "/ˈæpəl/"},
+            {"word": "banana", "meaning_vi": "quả chuối", "ipa": "/bəˈnænə/"},
+            {"word": "chicken", "meaning_vi": "thịt gà", "ipa": "/ˈtʃɪkɪn/"},
+            {"word": "fish", "meaning_vi": "cá", "ipa": "/fɪʃ/"}
+        ],
+        "phrases": [
+            {"english": "I drink water.", "meaning_vi": "Tôi uống nước."},
+            {"english": "I like apples.", "meaning_vi": "Tôi thích táo."},
+            {"english": "I eat rice every day.", "meaning_vi": "Tôi ăn cơm mỗi ngày."},
+            {"english": "Can I have some water?", "meaning_vi": "Tôi có thể xin một chút nước không?"},
+            {"english": "The food is delicious.", "meaning_vi": "Món ăn rất ngon."}
+        ]
     }
 ]
 
