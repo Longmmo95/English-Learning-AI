@@ -21,7 +21,23 @@ function say(t){if(!window.speechSynthesis){alert("Trình duyệt chưa hỗ tr�
   box.querySelectorAll("[data-say]").forEach(b=>b.onclick=()=>say(b.dataset.say));
   $("#finish").onclick=()=>{setCompletion(id);updateProgress();$("#finish").textContent="Đã hoàn thành ✓"};
 }
-function vocabulary(){box.innerHTML='<h2>Từ vựng A1</h2><p class="muted">Chọn nghe để luyện cách phát âm.</p>'+lessons.flatMap(l=>l.words).map(w=>'<div class="word"><b>'+w[0]+'</b><small>'+w[1]+' · '+w[2]+'</small><button class="action" data-say="'+w[0]+'">▶ Nghe</button></div>').join("");box.querySelectorAll("[data-say]").forEach(b=>b.onclick=()=>say(b.dataset.say))}function speaking(){
+function vocabulary(){
+  const allWords=lessons.flatMap(l=>l.words.map(w=>({lesson:l.title,word:w[0],meaning:w[1],ipa:w[2]})));
+  box.innerHTML='<h2>Từ vựng A1</h2><p class="muted">Tìm bằng từ tiếng Anh hoặc nghĩa tiếng Việt. Chọn nghe để luyện phát âm.</p>'+
+    '<label class="search-label" for="vocab-search">Tìm từ vựng</label>'+
+    '<input id="vocab-search" class="vocab-search" type="search" placeholder="Ví dụ: family, gia đình, water..." autocomplete="off" aria-label="Tìm từ tiếng Anh hoặc nghĩa tiếng Việt">'+
+    '<p id="vocab-count" class="muted" aria-live="polite"></p><div id="vocab-results"></div>';
+  const input=$("#vocab-search"),results=$("#vocab-results"),count=$("#vocab-count");
+  function render(){
+    const query=input.value.trim().toLocaleLowerCase("vi");
+    const filtered=allWords.filter(w=>(w.word+" "+w.meaning+" "+w.ipa+" "+w.lesson).toLocaleLowerCase("vi").includes(query));
+    count.textContent="Hiển thị "+filtered.length+"/"+allWords.length+" từ";
+    results.innerHTML=filtered.length?filtered.map(w=>'<div class="word"><small>'+w.lesson+'</small><b>'+w.word+'</b><small>'+w.meaning+' · '+w.ipa+'</small><button class="action" data-say="'+w.word+'">▶ Nghe</button></div>').join(""):'<p class="empty-state">Không tìm thấy từ phù hợp. Hãy thử từ khóa khác.</p>';
+    results.querySelectorAll("[data-say]").forEach(b=>b.onclick=()=>say(b.dataset.say));
+  }
+  input.addEventListener("input",render);
+  render();
+}function speaking(){
   const phrases=lessons.flatMap(l=>l.phrases.map(p=>({lesson:l.title,phrase:p})));
   box.innerHTML='<h2>Nghe và nói theo</h2><p class="muted">Nghe mẫu rồi tự lặp lại thành tiếng.</p>'+
     phrases.map(x=>'<div class="word"><small>'+x.lesson+'</small><b>'+x.phrase[0]+'</b><small>'+x.phrase[1]+'</small><button class="action" data-say="'+x.phrase[0]+'">▶ Nghe mẫu</button></div>').join("")+
