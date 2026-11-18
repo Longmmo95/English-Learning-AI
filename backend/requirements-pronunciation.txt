@@ -1,0 +1,4 @@
+# Optional real pronunciation engine (large CPU model dependencies and checkpoints).
+-r requirements.txt
+--extra-index-url https://download.pytorch.org/whl/cpu
+openpronounce==0.4.0
