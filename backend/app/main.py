@@ -1,4 +1,8 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form
+from fastapi.concurrency import run_in_threadpool
+from pathlib import Path
+import importlib.util
+import tempfile
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="English Learning AI API", version="0.2.0")
@@ -261,3 +265,82 @@ def get_lesson(lesson_id: str):
 def pronunciation_status():
     return {"available": False, "granularity": "word",
             "message": "Chưa tích hợp mô hình nhận diện và căn chỉnh phát âm. Không trả về điểm số giả."}
+
+
+MAX_AUDIO_BYTES = 12 * 1024 * 1024
+ALLOWED_AUDIO_SUFFIXES = {".wav", ".mp3", ".m4a", ".webm", ".ogg"}
+
+
+def _assess_pronunciation(audio_bytes: bytes, suffix: str, expected_text: str):
+    """Run the optional OpenPronounce engine; never substitute a heuristic score."""
+    from openpronounce import load_audio, compare_audio_with_text
+
+    temp_path = None
+    try:
+        with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as temp:
+            temp.write(audio_bytes)
+            temp_path = temp.name
+        sound = load_audio(temp_path)
+        result = compare_audio_with_text(sound, expected_text, lang="en")
+        differences = result.get("differences", {})
+        errors = [
+            {
+                "word": item.get("word"),
+                "expected": item.get("expected"),
+                "actual": item.get("actual"),
+                "confidence": item.get("confidence"),
+                "phones": item.get("phones", []),
+            }
+            for item in differences.get("errors", [])
+        ]
+        return {
+            "score": round(float(result["score"]), 1),
+            "transcription": result.get("transcribe", ""),
+            "errors": errors,
+            "phoneme_error_rate": differences.get("phoneme_error_rate"),
+            "word_error_rate": differences.get("word_error_rate"),
+            "message": "Điểm tham khảo từ mô hình OpenPronounce; có thể sai với giọng vùng miền hoặc bản ghi nhiễu.",
+        }
+    finally:
+        if temp_path and Path(temp_path).exists():
+            Path(temp_path).unlink()
+
+
+@app.get("/api/v1/pronunciation/status")
+def pronunciation_status():
+    installed = importlib.util.find_spec("openpronounce") is not None
+    return {
+        "available": installed,
+        "engine": "OpenPronounce" if installed else None,
+        "granularity": "phoneme_word_sentence" if installed else None,
+        "message": (
+            "Engine đã cài; mô hình sẽ được nạp khi chấm lần đầu."
+            if installed else
+            "Chưa cài engine OpenPronounce. Cài backend/requirements-pronunciation.txt để bật chấm thật."
+        ),
+    }
+
+
+@app.post("/api/v1/pronunciation/assess")
+async def assess_pronunciation(
+    audio: UploadFile = File(...),
+    expected_text: str = Form(...),
+):
+    expected_text = expected_text.strip()
+    if not expected_text or len(expected_text) > 500:
+        raise HTTPException(status_code=422, detail="Câu mẫu phải có từ 1 đến 500 ký tự.")
+    suffix = Path(audio.filename or "").suffix.lower()
+    if suffix not in ALLOWED_AUDIO_SUFFIXES:
+        raise HTTPException(status_code=415, detail="Định dạng âm thanh chưa được hỗ trợ.")
+    if importlib.util.find_spec("openpronounce") is None:
+        raise HTTPException(status_code=503, detail="Engine chấm phát âm chưa được cài trên máy chủ.")
+    audio_bytes = await audio.read(MAX_AUDIO_BYTES + 1)
+    if not audio_bytes:
+        raise HTTPException(status_code=400, detail="Bản ghi âm trống.")
+    if len(audio_bytes) > MAX_AUDIO_BYTES:
+        raise HTTPException(status_code=413, detail="Bản ghi vượt quá giới hạn 12 MB.")
+    try:
+        return await run_in_threadpool(_assess_pronunciation, audio_bytes, suffix, expected_text)
+    except Exception as exc:
+        # Do not leak server paths, model internals, or raw exception details.
+        raise HTTPException(status_code=503, detail="Engine chưa thể chấm bản ghi này. Hãy thử lại hoặc kiểm tra cấu hình mô hình.") from exc
