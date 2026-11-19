@@ -1,0 +1,17 @@
+services:
+  english-learning-api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "${API_PORT:-8000}:8000"
+    environment:
+      FRONTEND_ORIGINS: "${FRONTEND_ORIGINS:-http://localhost:8080,http://127.0.0.1:8080}"
+      HF_HOME: /models/huggingface
+      OPENPRONOUNCE_DEVICE: cpu
+    volumes:
+      - pronunciation-models:/models
+    restart: unless-stopped
+
+volumes:
+  pronunciation-models:
