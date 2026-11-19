@@ -6,6 +6,14 @@ const lessons = [
   {id:"shopping",title:"Mua sắm",desc:"Hỏi giá, chọn đồ và nói về kích cỡ khi mua sắm.",words:[["shop","cửa hàng","/ʃɑːp/"],["price","giá","/praɪs/"],["money","tiền","/ˈmʌni/"],["buy","mua","/baɪ/"],["sell","bán","/sel/"],["cheap","rẻ","/tʃiːp/"],["expensive","đắt","/ɪkˈspensɪv/"],["size","kích cỡ","/saɪz/"],["small","nhỏ","/smɔːl/"],["large","lớn","/lɑːrdʒ/"]],phrases:[["How much is this?","Cái này giá bao nhiêu?"],["It is too expensive.","Nó đắt quá."],["I want to buy this.","Tôi muốn mua cái này."],["Do you have a smaller size?","Bạn có cỡ nhỏ hơn không?"],["Can I pay by card?","Tôi có thể thanh toán bằng thẻ không?"]]},
   {id:"places-directions",title:"Địa điểm & chỉ đường",desc:"Hỏi vị trí các địa điểm quen thuộc và hiểu chỉ dẫn cơ bản.",words:[["station","nhà ga","/ˈsteɪʃən/"],["hospital","bệnh viện","/ˈhɑːspɪtəl/"],["bank","ngân hàng","/bæŋk/"],["school","trường học","/skuːl/"],["street","đường phố","/striːt/"],["left","bên trái","/left/"],["right","bên phải","/raɪt/"],["near","gần","/nɪr/"],["far","xa","/fɑːr/"],["where","ở đâu","/wer/"]],phrases:[["Where is the bank?","Ngân hàng ở đâu?"],["Go straight ahead.","Đi thẳng về phía trước."],["Turn left at the corner.","Rẽ trái ở góc đường."],["The hospital is near here.","Bệnh viện ở gần đây."],["Is it far from here?","Nó có xa đây không?"]]}
 ];
+const grammarLessons = {
+ greetings: {title:"Động từ to be: am / is / are",explanation_vi:"Dùng am với I, is với he/she/it và are với you/we/they.",example:"I am Long. You are my friend.",question_vi:"Chọn từ đúng: I ___ Long.",options:["am","is","are"],answer:"am",feedback_vi:"Với chủ ngữ I, dùng am."},
+ family: {title:"Tính từ sở hữu: my / his / her",explanation_vi:"Đặt my, his hoặc her trước danh từ để nói người/vật thuộc về ai.",example:"This is my mother. Her name is Lan.",question_vi:"This is ___ mother.",options:["I","my","me"],answer:"my",feedback_vi:"My đứng trước danh từ mother; I là chủ ngữ, me là tân ngữ."},
+ "daily-routine": {title:"Hiện tại đơn với I / you / we / they",explanation_vi:"Khi nói về thói quen, với I, you, we và they ta dùng động từ nguyên mẫu.",example:"I wake up at six. We go to work at eight.",question_vi:"I ___ up at six.",options:["wake","wakes","waking"],answer:"wake",feedback_vi:"Sau chủ ngữ I, dùng động từ nguyên mẫu wake."},
+ "food-drinks": {title:"A / an / some",explanation_vi:"Dùng a/an với danh từ đếm được số ít; dùng some với danh từ không đếm được hoặc danh từ số nhiều.",example:"an apple · a sandwich · some water",question_vi:"I would like ___ water.",options:["a","an","some"],answer:"some",feedback_vi:"Water là danh từ không đếm được nên dùng some."},
+ shopping: {title:"Hỏi giá với How much",explanation_vi:"Dùng How much is this? để hỏi giá một món hàng hoặc hỏi lượng không đếm được.",example:"How much is this? It is ten dollars.",question_vi:"How ___ is this?",options:["many","much","old"],answer:"much",feedback_vi:"How much dùng để hỏi giá; How many dùng với danh từ đếm được số nhiều."},
+ "places-directions": {title:"Câu mệnh lệnh khi chỉ đường",explanation_vi:"Dùng động từ nguyên mẫu ở đầu câu để đưa ra chỉ dẫn; không thêm -s hoặc -ing.",example:"Go straight. Turn left at the corner.",question_vi:"___ left at the corner.",options:["Turn","Turns","Turning"],answer:"Turn",feedback_vi:"Câu mệnh lệnh bắt đầu bằng động từ nguyên mẫu Turn."}
+};
 const $=s=>document.querySelector(s),box=$("#dynamic");
 const keys={completed:"ela-completed-lessons",minutes:"ela-study-seconds",streak:"ela-study-streak",lastDay:"ela-last-study-day"};
 const read=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key)||JSON.stringify(fallback))}catch{return fallback}};
@@ -54,11 +62,24 @@ function path(){
 }
 function lesson(id){
  const l=lessons.find(x=>x.id===id);if(!l)return;
+ const grammar=grammarLessons[id];
+ const grammarHtml=grammar
+  ? '<section class="word grammar-lesson"><p class="eyebrow">NGỮ PHÁP A1</p><h3>'+grammar.title+'</h3><p>'+grammar.explanation_vi+'</p><p><b>Ví dụ:</b> '+grammar.example+'</p><b>'+grammar.question_vi+'</b><div class="flash-actions">'+grammar.options.map(option=>'<button class="action" data-grammar-option="'+option+'">'+option+'</button>').join("")+'</div><small id="grammar-feedback" aria-live="polite"></small></section>'
+  : "";
  box.innerHTML='<button class="action" id="back">← Lộ trình</button><h2>'+l.title+'</h2><p class="muted">'+l.desc+'</p><h3>Từ vựng</h3>'+
  l.words.map(w=>'<div class="word"><b>'+w[0]+'</b><small>'+w[1]+' · '+w[2]+'</small><button class="action" data-say="'+w[0]+'">▶ Nghe phát âm</button></div>').join("")+
  '<h3>Mẫu câu</h3>'+l.phrases.map(p=>'<div class="word"><b>'+p[0]+'</b><small>'+p[1]+'</small><button class="action" data-say="'+p[0]+'">▶ Nghe câu</button></div>').join("")+
+ grammarHtml+
  '<button class="action" id="finish">'+(completed.has(id)?"Đã hoàn thành ✓":"Đánh dấu hoàn thành")+'</button>';
  $("#back").onclick=path;box.querySelectorAll("[data-say]").forEach(b=>b.onclick=()=>say(b.dataset.say));
+ box.querySelectorAll("[data-grammar-option]").forEach(button=>button.onclick=()=>{
+  const feedback=$("#grammar-feedback");
+  const correct=button.dataset.grammarOption===grammar.answer;
+  feedback.className=correct?"word-match":"word-miss";
+  feedback.textContent=correct?"✓ Chính xác! "+grammar.feedback_vi:"Chưa đúng. Đáp án là "+grammar.answer+". "+grammar.feedback_vi;
+  if(correct)box.querySelectorAll("[data-grammar-option]").forEach(option=>option.disabled=true);
+  markStudyDay();
+ });
  $("#finish").onclick=()=>{completed.add(id);localStorage.setItem(keys.completed,JSON.stringify([...completed]));markStudyDay();$("#finish").textContent="Đã hoàn thành ✓";alert("Đã lưu tiến độ bài học trên thiết bị này.")};
 }
 function vocabulary(){

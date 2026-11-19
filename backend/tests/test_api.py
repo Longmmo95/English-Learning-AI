@@ -44,6 +44,22 @@ def test_daily_routine_lesson():
     assert len(lesson["phrases"]) == 5
 
 
+
+def test_every_a1_lesson_includes_grammar_and_a_valid_practice_question():
+    payload = client.get("/api/v1/lessons").json()
+    assert payload["total"] == 6
+    for lesson in payload["items"]:
+        grammar = lesson["grammar"]
+        assert grammar["title"]
+        assert grammar["explanation_vi"]
+        assert grammar["example"]
+        assert grammar["question_vi"]
+        assert len(grammar["options"]) == 3
+        assert grammar["answer"] in grammar["options"]
+        detail = client.get(f"/api/v1/lessons/{lesson['id']}").json()
+        assert detail["grammar"] == grammar
+
+
 def test_unknown_lesson():
     assert client.get("/api/v1/lessons/not-real").status_code == 404
 

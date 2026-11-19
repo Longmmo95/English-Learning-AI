@@ -181,6 +181,19 @@ LESSONS = [
     }
 ]
 
+GRAMMAR_LESSONS = {
+    "greetings": {"title": "Động từ to be: am / is / are", "explanation_vi": "Dùng am với I, is với he/she/it và are với you/we/they.", "example": "I am Long. You are my friend.", "question_vi": "Chọn từ đúng: I ___ Long.", "options": ["am", "is", "are"], "answer": "am", "feedback_vi": "Với chủ ngữ I, dùng am."},
+    "family": {"title": "Tính từ sở hữu: my / his / her", "explanation_vi": "Đặt my, his hoặc her trước danh từ để nói người/vật thuộc về ai.", "example": "This is my mother. Her name is Lan.", "question_vi": "This is ___ mother.", "options": ["I", "my", "me"], "answer": "my", "feedback_vi": "My đứng trước danh từ mother; I là chủ ngữ, me là tân ngữ."},
+    "daily-routine": {"title": "Hiện tại đơn với I / you / we / they", "explanation_vi": "Khi nói về thói quen, với I, you, we và they ta dùng động từ nguyên mẫu.", "example": "I wake up at six. We go to work at eight.", "question_vi": "I ___ up at six.", "options": ["wake", "wakes", "waking"], "answer": "wake", "feedback_vi": "Sau chủ ngữ I, dùng động từ nguyên mẫu wake."},
+    "food-drinks": {"title": "A / an / some", "explanation_vi": "Dùng a/an với danh từ đếm được số ít; dùng some với danh từ không đếm được hoặc danh từ số nhiều.", "example": "an apple · a sandwich · some water", "question_vi": "I would like ___ water.", "options": ["a", "an", "some"], "answer": "some", "feedback_vi": "Water là danh từ không đếm được nên dùng some."},
+    "shopping": {"title": "Hỏi giá với How much", "explanation_vi": "Dùng How much is this? để hỏi giá một món hàng hoặc hỏi lượng không đếm được.", "example": "How much is this? It is ten dollars.", "question_vi": "How ___ is this?", "options": ["many", "much", "old"], "answer": "much", "feedback_vi": "How much dùng để hỏi giá; How many dùng với danh từ đếm được số nhiều."},
+    "places-directions": {"title": "Câu mệnh lệnh khi chỉ đường", "explanation_vi": "Dùng động từ nguyên mẫu ở đầu câu để đưa ra chỉ dẫn; không thêm -s hoặc -ing.", "example": "Go straight. Turn left at the corner.", "question_vi": "___ left at the corner.", "options": ["Turn", "Turns", "Turning"], "answer": "Turn", "feedback_vi": "Câu mệnh lệnh bắt đầu bằng động từ nguyên mẫu Turn."},
+}
+
+for lesson in LESSONS:
+    lesson["grammar"] = GRAMMAR_LESSONS[lesson["id"]]
+
+
 
 @app.get("/health")
 def health():

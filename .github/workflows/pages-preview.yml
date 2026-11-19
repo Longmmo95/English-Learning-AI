@@ -1,17 +1,13 @@
-name: Publish English Learning AI preview
+name: Publish English Learning AI to public GitHub Pages (manual)
 
 on:
-  push:
-    branches:
-      - feature/interactive-flashcards
-    paths:
-      - "index.html"
-      - "styles.css"
-      - "app.js"
-      - "flashcards.css"
-      - "flashcards.js"
-      - ".github/workflows/pages-preview.yml"
   workflow_dispatch:
+    inputs:
+      confirm_public_publish:
+        description: "I confirm this publishes the feature branch to the public GitHub Pages URL."
+        required: true
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -19,24 +15,51 @@ permissions:
   id-token: write
 
 concurrency:
-  group: github-pages-preview
+  group: github-pages-manual
   cancel-in-progress: true
 
 jobs:
   deploy:
+    if: inputs.confirm_public_publish == true
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: \${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout preview branch
+      - name: Checkout feature branch
         uses: actions/checkout@v7
 
-      - name: Prepare static frontend only
+      - name: Prepare complete static frontend
         run: |
           mkdir -p _site
-          cp index.html styles.css app.js flashcards.css flashcards.js _site/
+          cp index.html styles.css app.js flashcards.css flashcards.js manifest.webmanifest icon.svg sw.js _site/
           touch _site/.nojekyll
+
+      - name: Verify static bundle and offline assets
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          site = Path("_site")
+          required = (
+              "index.html", "styles.css", "app.js", "flashcards.css",
+              "flashcards.js", "manifest.webmanifest", "icon.svg", "sw.js",
+          )
+          missing = [name for name in required if not (site / name).is_file()]
+          if missing:
+              raise SystemExit(f"Missing static assets: {missing}")
+
+          html = (site / "index.html").read_text(encoding="utf-8")
+          for asset in ("styles.css", "flashcards.css", "app.js", "flashcards.js",
+                        "manifest.webmanifest", "icon.svg"):
+              if asset not in html:
+                  raise SystemExit(f"index.html does not reference {asset}")
+
+          worker = (site / "sw.js").read_text(encoding="utf-8")
+          if 'url.pathname.includes("/api/")' not in worker:
+              raise SystemExit("Service worker must never cache API responses")
+          print("Complete static bundle verified.")
+          PY
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v6
@@ -46,6 +69,6 @@ jobs:
         with:
           path: _site
 
-      - name: Deploy preview
+      - name: Deploy public site
         id: deployment
         uses: actions/deploy-pages@v5

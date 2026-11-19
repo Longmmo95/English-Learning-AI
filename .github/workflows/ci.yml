@@ -61,6 +61,12 @@ jobs:
           assert 'reviewOnly' in cards and 'known.clear()' in cards
           assert 'if (reviewOnly) { if (index >= deck().length) index = 0; }' in cards
           assert 'data-lesson-id="daily-routine"' in html
+          assert "const grammarLessons =" in app
+          assert "data-grammar-option" in app
+          pages = Path(".github/workflows/pages-preview.yml").read_text(encoding="utf-8")
+          assert "workflow_dispatch:" in pages and "\\n  push:" not in pages
+          assert "confirm_public_publish" in pages
+          assert "manifest.webmanifest" in pages and "sw.js" in pages
           print("Frontend integration checks passed.")
           PY
 

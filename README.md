@@ -7,12 +7,20 @@ Website học tiếng Anh độc lập cho người Việt mới bắt đầu (A
 - Nhánh thử nghiệm: `feature/interactive-flashcards`
 - Mọi thay đổi hiện được kiểm tra trên nhánh thử nghiệm; chưa tự động gộp vào `main`.
 
+## Trạng thái xuất bản và an toàn
+
+- URL GitHub Pages ở trên là địa chỉ công khai, không phải bản xem riêng tư. GitHub Actions run #27 đã báo triển khai thành công từ nhánh feature ngày 18/11/2026.
+- Để tránh tự động xuất bản thay đổi chưa được anh duyệt, workflow Pages hiện chỉ cho phép chạy thủ công và yêu cầu xác nhận rõ ràng trước khi deploy công khai.
+- Lần cập nhật này không chạy deploy. URL công khai hiện tại giữ nguyên bản đã xuất bản trước đó cho đến khi chủ repository chủ động xác nhận một lần xuất bản mới.
+- Workflow mới đóng gói thêm manifest, icon và service worker; bản Pages cũ có thể chưa có đủ các tệp này.
+
 ## Tính năng hiện có
 - [x] Trang tổng quan và lộ trình 6 bài học A1: chào hỏi, gia đình, công việc hằng ngày, đồ ăn & thức uống, mua sắm, địa điểm & chỉ đường.
 - [x] Từ vựng, phiên âm IPA, mẫu câu song ngữ và đọc mẫu bằng Web Speech API.
 - [x] Thẻ ghi nhớ: lật thẻ, lọc từ chưa nhớ, xáo trộn, đặt lại tiến độ và lưu cục bộ.
 - [x] Luyện nói bằng nhận diện giọng nói có sẵn của trình duyệt; đối chiếu văn bản theo từng từ.
 - [x] Bài ôn tập từ vựng, tiến độ bài học, thời gian học và chuỗi ngày học được lưu trên thiết bị này.
+- [x] Mỗi bài học có một mục ngữ pháp A1, ví dụ và câu hỏi trắc nghiệm tương tác; API trả cùng dữ liệu ngữ pháp.
 - [x] API FastAPI cho danh sách/chi tiết bài học và kiểm thử tự động.
 - [x] Adapter API tùy chọn cho OpenPronounce: nhận tệp ghi âm, trả phân tích âm vị khi engine được cài.
 - [x] Giới hạn 10 yêu cầu phân tích/phút/IP trên mỗi tiến trình backend; từ chối quá giới hạn bằng HTTP 429.
