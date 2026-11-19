@@ -3,16 +3,22 @@ from fastapi.concurrency import run_in_threadpool
 from pathlib import Path
 import importlib.util
 import tempfile
+import os
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title="English Learning AI API", version="0.2.0")
+def _configured_origins():
+    raw = os.getenv("FRONTEND_ORIGINS", "http://localhost:8080,http://127.0.0.1:8080")
+    return [origin.strip().rstrip("/") for origin in raw.split(",") if origin.strip()]
+
+app = FastAPI(title="English Learning AI API", version="0.3.0")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Restrict to the deployed frontend origin before production.
+    allow_origins=_configured_origins(),
     allow_credentials=False,
-    allow_methods=["GET", "POST"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type"],
 )
+
 
 LESSONS = [
     {
