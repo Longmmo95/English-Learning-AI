@@ -114,11 +114,15 @@ function speaking(){
  function apiBase(){return (localStorage.getItem(apiKey)||"").replace(/\/+$/,"")}
  function renderAnalysis(data){
   const rawScore=data?.score;const score=typeof rawScore==="number"&&Number.isFinite(rawScore)&&rawScore>=0&&rawScore<=100?Math.round(rawScore):null;if(score===null)throw new Error("Máy chủ không trả về điểm phát âm hợp lệ; không hiển thị điểm.");const diff=data.differences||{},errors=Array.isArray(diff.errors)?diff.errors:[];
-  const errorHtml=errors.length?errors.map(item=>'<div class="pronunciation-error"><b>'+safe(item.word||"Từ cần luyện")+'</b><small>Mong đợi: /'+safe(item.expected||"—")+'/</small><small>Nhận diện: /'+safe(item.actual||"không nhận diện được")+'/</small></div>').join(""):'<p class="word-match">Không phát hiện lỗi âm vị đáng kể trong câu này. Hãy nghe lại để tự kiểm tra.</p>';
-  result.innerHTML='<div class="pronunciation-score"><span>Điểm đánh giá tham khảo</span><strong>'+ score+'<small>/100</small></strong></div>'+
+  const errorHtml=errors.length?errors.map(item=>{
+   const confidence=typeof item.confidence==="number"&&Number.isFinite(item.confidence)&&item.confidence>=0&&item.confidence<=1?Math.round(item.confidence*100):null;
+   return '<div class="pronunciation-error"><b>'+safe(item.word||"Từ cần luyện")+'</b><small>Mong đợi: /'+safe(item.expected||"—")+'/</small><small>Nhận diện: /'+safe(item.actual||"không nhận diện được")+'/</small>'+(confidence===null?"":'<small>Độ tin cậy phát hiện lỗi: '+confidence+'%</small>')+'</div>';
+  }).join(""):'<p class="word-match">Không phát hiện lỗi âm vị đáng kể trong câu này. Hãy nghe lại để tự kiểm tra.</p>';
+  result.innerHTML='<div class="pronunciation-score"><span>Điểm tổng câu (tham khảo)</span><strong>'+ score+'<small>/100</small></strong></div>'+
    '<b>Máy nhận diện được:</b><p>'+safe(data.transcribe||"Chưa có bản phiên âm.")+'</p>'+
    '<b>Những từ nên luyện lại:</b>'+errorHtml+
    '<p class="muted">WER: '+safe(diff.word_error_rate??"—")+' · Phoneme error rate: '+safe(diff.phoneme_error_rate??"—")+'</p>'+
+   '<p class="muted">Điểm 0–100 áp dụng cho toàn câu. Độ tin cậy bên cạnh từng lỗi là độ tin cậy phát hiện lỗi của mô hình, không phải điểm số riêng của từ.</p>'+
    '<p class="muted">Kết quả do mô hình âm thanh OpenPronounce tạo ra, không phải điểm do so khớp chữ trong trình duyệt.</p>';
   result.classList.remove("hidden");markStudyDay();
  }

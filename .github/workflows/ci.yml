@@ -63,6 +63,10 @@ jobs:
           assert 'data-lesson-id="daily-routine"' in html
           assert "const grammarLessons =" in app
           assert "data-grammar-option" in app
+          assert "Điểm tổng câu (tham khảo)" in app
+          assert "Độ tin cậy phát hiện lỗi" in app
+          dockerfile = Path("backend/Dockerfile.pronunciation").read_text(encoding="utf-8")
+          assert "backend/requirements-pronunciation.txt" in dockerfile
           pages = Path(".github/workflows/pages-preview.yml").read_text(encoding="utf-8")
           assert "workflow_dispatch:" in pages and "\\n  push:" not in pages
           assert "confirm_public_publish" in pages

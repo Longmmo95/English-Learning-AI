@@ -6,7 +6,7 @@ GitHub Pages chỉ chạy giao diện tĩnh. Máy chấm âm thanh phải chạy
 
 - Engine: https://github.com/Halleck45/OpenPronounce, giấy phép MIT.
 - Phiên bản được khóa: `openpronounce==0.4.0` (MIT). Bản 1.0.0 phát hành ngày 18/11/2026 dùng giấy phép AGPL-3.0 và API `assess()` mới; dự án giữ 0.4.0 để tránh đổi giấy phép/API ngoài ý muốn. Chỉ nâng cấp sau khi rà soát giấy phép và chuyển đổi/kiểm thử cả FastAPI lẫn Gradio adapter.
-- Wav2Vec2 nhận diện âm vị; so sánh âm thanh người học với câu mẫu, trả về điểm tổng, từ có lỗi và IPA.
+- Wav2Vec2 nhận diện âm vị; so sánh âm thanh người học với câu mẫu, trả về điểm tổng, danh sách từ có lỗi và IPA. Phiên bản 0.4.0 không cung cấp điểm số riêng đã hiệu chuẩn cho từng từ; trường `confidence` là độ tin cậy phát hiện lỗi, không phải điểm phát âm của từ.
 - Tiếng Anh là ngôn ngữ đã được hiệu chỉnh theo dữ liệu đánh giá. Đây là ước lượng hỗ trợ học tập, không phải chứng nhận năng lực.
 - Hai checkpoint tải về khoảng 2,4 GB trong lần phân tích đầu tiên. Máy chủ cần dung lượng đĩa, RAM và CPU phù hợp; lần đầu có thể chờ lâu.
 - Cần cài ffmpeg và espeak-ng. Không chạy mô hình trong GitHub Pages hoặc CI thông thường.
