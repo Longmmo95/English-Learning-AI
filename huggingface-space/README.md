@@ -36,6 +36,10 @@ Không chọn CPU Basic/Docker trả phí và không bật phần cứng tính p
 - Bản ghi âm được gửi tới máy chủ Space để phân tích. Không ghi âm nội dung riêng tư.
 - Ứng dụng không chứa API key hoặc token.
 
+## Khóa phiên bản và giấy phép
+
+Space này dùng `openpronounce==0.4.0` theo giấy phép MIT. Không tự nâng lên 1.0.0: bản phát hành ngày 18/11/2026 chuyển sang AGPL-3.0 và API Python đã đổi; cần rà soát giấy phép và cập nhật adapter trước khi nâng cấp.
+
 ## Công nghệ
 
 - Gradio + Hugging Face ZeroGPU

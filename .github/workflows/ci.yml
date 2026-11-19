@@ -113,6 +113,8 @@ jobs:
           assert "sdk: gradio" in readme
           assert "python_version: \"3.12\"" in readme
           assert "openpronounce==0.4.0" in requirements
+          backend_pronunciation = Path("backend/requirements-pronunciation.txt").read_text(encoding="utf-8")
+          assert "openpronounce==0.4.0" in backend_pronunciation
           assert "@spaces.GPU" in app
           assert "compare_audio_with_text" in app
           assert "demo.queue(default_concurrency_limit=1, max_size=10)" in app

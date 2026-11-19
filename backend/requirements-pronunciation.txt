@@ -1,1 +1,2 @@
+# Pinned intentionally: 0.4.0 is MIT; 1.0.0 is AGPL-3.0 with a changed API.
 openpronounce==0.4.0
