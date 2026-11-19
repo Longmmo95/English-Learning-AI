@@ -65,3 +65,25 @@ def test_food_and_drinks_lesson_has_eight_words_and_five_phrases():
     assert len(lesson["vocabulary"]) == 8
     assert len(lesson["phrases"]) == 5
     assert lesson["vocabulary"][0]["word"] == "water"
+
+
+
+def test_cors_allows_local_frontend_origin():
+    response = client.options(
+        "/api/v1/pronunciation/status",
+        headers={
+            "Origin": "http://localhost:8080",
+            "Access-Control-Request-Method": "GET",
+        },
+    )
+    assert response.status_code == 200
+    assert response.headers.get("access-control-allow-origin") == "http://localhost:8080"
+
+
+def test_pronunciation_rejects_empty_expected_text_before_engine_check():
+    response = client.post(
+        "/api/v1/pronunciation/assess",
+        data={"expected_text": "   "},
+        files={"audio": ("recording.wav", b"not-empty", "audio/wav")},
+    )
+    assert response.status_code == 422
