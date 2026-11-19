@@ -112,7 +112,7 @@ GitHub Actions tự chạy bộ kiểm thử này khi có thay đổi trong `bac
 
 Engine đang pin [OpenPronounce 0.4.0](https://github.com/OpenPronounce/OpenPronounce) (bản MIT, Python 3.10+). Không tự nâng lên các phiên bản mới hơn khi chưa rà soát thay đổi API và giấy phép của upstream. Tài liệu dự án mô tả so sánh âm thanh với câu mẫu, nhận diện phoneme bằng Wav2Vec2, căn chỉnh chuỗi âm và trả về các từ có lỗi kèm IPA mong đợi/được nhận diện. Chạy được trên CPU, nhưng lần đầu cần tải hai checkpoint khoảng 1,2 GB mỗi checkpoint và cài FFmpeg cùng espeak-ng.
 
-**Chưa tích hợp vào ứng dụng.** Tài liệu OpenPronounce nêu rõ chỉ tiếng Anh được hiệu chuẩn với đánh giá con người; mô hình có thể báo nhầm, đặc biệt với từ ngắn, giọng vùng miền và bản ghi nhiễu. Vì vậy chưa an toàn để đưa điểm số cho người học nếu chưa thử trên giọng người Việt và đối chiếu người chấm.
+**Đã tích hợp adapter backend tùy chọn, chưa bật trên máy chủ công khai.** Tài liệu OpenPronounce 0.4.0 nêu rõ tiếng Anh là ngôn ngữ được hiệu chuẩn; mô hình có thể báo nhầm, đặc biệt với từ ngắn, giọng vùng miền và bản ghi nhiễu. Vì vậy điểm chỉ mang tính tham khảo cho đến khi được kiểm thử trên giọng người Việt và đối chiếu với người chấm.
 
 Ứng viên nghiên cứu thứ hai là [GOPT chính thức](https://github.com/YuanGongND/gopt), mô hình học thuật chấm nhiều cấp độ phoneme/từ/câu. Repo báo cáo PCC 0,549 ở cấp từ trên SpeechOcean762, nhưng quy trình cần đặc trưng GOP và pipeline dữ liệu/Kaldi; không phải thư viện cắm vào FastAPI là chạy ngay.
 
