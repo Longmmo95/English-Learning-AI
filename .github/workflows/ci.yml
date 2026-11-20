@@ -68,7 +68,15 @@ jobs:
           dockerfile = Path("backend/Dockerfile.pronunciation").read_text(encoding="utf-8")
           assert "backend/requirements-pronunciation.txt" in dockerfile
           pages = Path(".github/workflows/pages-preview.yml").read_text(encoding="utf-8")
-          assert "workflow_dispatch:" in pages and "\\n  push:" not in pages
+                    import re
+          trigger_block = pages.split("permissions:", 1)[0]
+          assert "workflow_dispatch:" in trigger_block
+          assert not re.search(r"(?m)^  (?:push|pull_request):", trigger_block)
+          assert r"\\${{" not in pages
+          assert "${{ steps.deployment.outputs.page_url }}" in pages
+          css = Path("styles.css").read_text(encoding="utf-8")
+          assert "@media(max-width:850px)" in css
+          assert "@media(max-width:620px)" in css
           assert "confirm_public_publish" in pages
           assert "manifest.webmanifest" in pages and "sw.js" in pages
           print("Frontend integration checks passed.")
