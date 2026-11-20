@@ -68,12 +68,13 @@ jobs:
           dockerfile = Path("backend/Dockerfile.pronunciation").read_text(encoding="utf-8")
           assert "backend/requirements-pronunciation.txt" in dockerfile
           pages = Path(".github/workflows/pages-preview.yml").read_text(encoding="utf-8")
-                    import re
           trigger_block = pages.split("permissions:", 1)[0]
           assert "workflow_dispatch:" in trigger_block
-          assert not re.search(r"(?m)^  (?:push|pull_request):", trigger_block)
-          assert r"\\${{" not in pages
-          assert "${{ steps.deployment.outputs.page_url }}" in pages
+          assert "  push:" not in trigger_block
+          assert "  pull_request:" not in trigger_block
+          expression = "$" + "{{ steps.deployment.outputs.page_url }}"
+          assert expression in pages
+          assert "\\" + expression not in pages
           css = Path("styles.css").read_text(encoding="utf-8")
           assert "@media(max-width:850px)" in css
           assert "@media(max-width:620px)" in css
