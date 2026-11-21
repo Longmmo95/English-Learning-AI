@@ -93,3 +93,10 @@ footer{color:#9295ad}
 .word-extra{display:inline-block;padding:3px 6px;margin:2px;border-radius:5px;background:#fff4d6;color:#8a5a00;font-weight:700}
 #ios-dictation input{display:block;width:100%;min-height:44px;padding:12px;border:1px solid var(--line);border-radius:9px;font:16px Arial,sans-serif;margin:8px 0}
 #ios-dictation button{min-height:42px}
+
+/* Listening comprehension: large tap targets and clear feedback on mobile. */
+.listening-options{display:grid;grid-template-columns:1fr;gap:8px;margin:12px 0}
+.listening-choice{width:100%;min-height:46px;text-align:left;padding:12px 14px}
+.listening-choice.is-correct{border-color:#209b7b;background:#eaf8f2;color:#176b58}
+.listening-choice.is-wrong{border-color:#d47777;background:#fff0f0;color:#913939}
+@media(min-width:700px){.listening-options{grid-template-columns:repeat(2,minmax(0,1fr))}}
