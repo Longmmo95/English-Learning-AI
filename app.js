@@ -51,9 +51,9 @@ function show(name){
  if(name!=="speaking"&&typeof window.stopSpeakingCapture==="function"){window.stopSpeakingCapture();window.stopSpeakingCapture=null}
  document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.view===name));
  [".hero",".stats",".columns"].forEach(s=>$(s).classList.toggle("hidden",name!=="home"));box.classList.toggle("hidden",name==="home");
- const titles={home:["Chào bạn! ✦","Mỗi ngày tiến bộ một chút. Hôm nay mình cùng học nhé!"],path:["Lộ trình học","Học từng chủ đề nhỏ, đi từ dễ đến khó."],vocabulary:["Từ vựng","Nghe, đọc và ghi nhớ những từ thông dụng."],speaking:["Luyện nói","Nghe mẫu, nói theo và xem từ nào được trình duyệt nhận diện."],review:["Ôn tập","Kiểm tra nhanh kiến thức từ cả sáu chủ đề."],flashcards:["Thẻ ghi nhớ","Ôn từ vựng bằng cách tự nhớ nghĩa trước khi lật thẻ."]};
+ const titles={home:["Chào bạn! ✦","Mỗi ngày tiến bộ một chút. Hôm nay mình cùng học nhé!"],path:["Lộ trình học","Học từng chủ đề nhỏ, đi từ dễ đến khó."],vocabulary:["Từ vựng","Nghe, đọc và ghi nhớ những từ thông dụng."],speaking:["Luyện nói","Nghe mẫu, nói theo và xem từ nào được trình duyệt nhận diện."],review:["Ôn tập","Kiểm tra nhanh kiến thức từ cả sáu chủ đề."],listening:["Nghe hiểu","Nghe câu tiếng Anh và chọn nghĩa tiếng Việt phù hợp."],flashcards:["Thẻ ghi nhớ","Ôn từ vựng bằng cách tự nhớ nghĩa trước khi lật thẻ."]};
  $("#heading").textContent=titles[name][0];$("#subheading").textContent=titles[name][1];
- if(name==="path")path();if(name==="vocabulary")vocabulary();if(name==="speaking")speaking();if(name==="review")review();
+ if(name==="path")path();if(name==="vocabulary")vocabulary();if(name==="listening")listening();if(name==="speaking")speaking();if(name==="review")review();
 }
 function path(){
  box.innerHTML='<p class="eyebrow">A1 · MỚI BẮT ĐẦU</p><h2>Lộ trình nền tảng</h2><p class="muted">Hoàn thành từng bài để ghi lại tiến độ trên thiết bị này.</p>'+
@@ -87,6 +87,49 @@ function vocabulary(){
  lessons.map(l=>'<h3>'+l.title+'</h3>'+l.words.map(w=>'<div class="word"><b>'+w[0]+'</b><small>'+w[1]+' · '+w[2]+'</small><button class="action" data-say="'+w[0]+'">▶ Nghe</button></div>').join("")).join("");
  box.querySelectorAll("[data-say]").forEach(b=>b.onclick=()=>say(b.dataset.say));
 }
+
+function listening(){
+ const all=lessons.flatMap(l=>l.phrases.map(p=>({lesson:l.title,english:p[0],vietnamese:p[1]})));
+ let questions=[],index=0,score=0;
+ function makeQuestions(){
+  questions=[...all].sort(()=>Math.random()-.5).slice(0,8).map(question=>{
+   const distractors=[...new Set(all.filter(item=>item.vietnamese!==question.vietnamese).map(item=>item.vietnamese))].sort(()=>Math.random()-.5).slice(0,3);
+   return {...question,options:[question.vietnamese,...distractors].sort(()=>Math.random()-.5)};
+  });
+  index=0;score=0;render();
+ }
+ function render(){
+  if(index>=questions.length){
+   box.innerHTML='<p class="eyebrow">NGHE HIỂU · A1</p><h2>Hoàn thành lượt nghe 🎉</h2><div class="word"><strong>'+score+'/'+questions.length+' câu đúng</strong><p class="muted">Hãy nghe lại những câu khó và thử một lượt mới để ghi nhớ lâu hơn.</p></div><div class="flash-actions"><button class="action primary" id="listen-restart">Luyện lượt khác</button><button class="action" id="listen-home">Về tổng quan</button></div><p class="muted">Âm thanh được tạo bởi giọng đọc của trình duyệt; điểm số chỉ phản ánh câu trả lời nghĩa, không phải điểm phát âm.</p>';
+   $("#listen-restart").onclick=makeQuestions;$("#listen-home").onclick=()=>show("home");return;
+  }
+  const q=questions[index];
+  box.innerHTML='<p class="eyebrow">NGHE HIỂU · A1</p><div class="flash-head"><div><h2>Nghe và chọn nghĩa</h2><p class="muted">'+q.lesson+'</p></div><span class="flash-count">'+(index+1)+' / '+questions.length+'</span></div><div class="flash-progress"><span style="width:'+Math.round(index/questions.length*100)+'%"></span></div><div class="word"><p><b>1.</b> Nghe câu tiếng Anh, sau đó chọn nghĩa đúng bằng tiếng Việt.</p><div class="flash-actions"><button class="action flash-reveal" id="listen-play">🔊 Phát câu</button><button class="action" id="listen-replay">↻ Nghe lại</button></div><p id="listen-transcript" class="muted" aria-live="polite">Nội dung câu sẽ hiện sau khi bạn trả lời.</p></div><div class="word"><b>Chọn nghĩa phù hợp</b><div class="listening-options">'+q.options.map((option,i)=>'<button class="action listening-choice" data-listening-option="'+i+'">'+option+'</button>').join("")+'</div><p id="listen-feedback" class="muted" aria-live="polite">Bạn có thể nghe lại trước khi chọn.</p><button class="action" id="listen-next" disabled>'+(index===questions.length-1?'Xem kết quả':'Câu tiếp theo →')+'</button></div><p class="muted">Giọng đọc dùng Web Speech API của thiết bị, có thể khác nhau tùy trình duyệt và giọng đã cài. Bài này kiểm tra nghe hiểu nghĩa, không chấm phát âm.</p>';
+  const feedback=$("#listen-feedback"),transcript=$("#listen-transcript");
+  const play=()=>{
+   if(!("speechSynthesis" in window)||typeof SpeechSynthesisUtterance==="undefined"){feedback.textContent="Thiết bị chưa hỗ trợ đọc tiếng Anh. Hãy thử Chrome hoặc Edge.";return;}
+   say(q.english);
+  };
+  $("#listen-play").onclick=play;$("#listen-replay").onclick=play;
+  box.querySelectorAll("[data-listening-option]").forEach(button=>button.onclick=()=>{
+   if(button.disabled)return;
+   const selected=Number(button.dataset.listeningOption),correct=q.options[selected]===q.vietnamese;
+   if(correct)score++;
+   box.querySelectorAll("[data-listening-option]").forEach(option=>{
+    option.disabled=true;
+    const isAnswer=q.options[Number(option.dataset.listeningOption)]===q.vietnamese;
+    if(isAnswer)option.classList.add("is-correct");
+    else if(option===button)option.classList.add("is-wrong");
+   });
+   feedback.textContent=correct?"✓ Chính xác! "+q.vietnamese:"Chưa đúng. Nghĩa đúng là: "+q.vietnamese;
+   transcript.textContent="Câu vừa nghe: "+q.english;
+   $("#listen-next").disabled=false;markStudyDay();
+  });
+  $("#listen-next").onclick=()=>{index++;render();};
+ }
+ makeQuestions();
+}
+
 function normalizeWords(text){return text.toLocaleLowerCase("en-US").replace(/[^a-z0-9'\s]/g," ").trim().split(/\s+/).filter(Boolean)}
 function speaking(){
  const phrases=lessons.flatMap(l=>l.phrases.map(p=>({lesson:l.title,text:p[0],meaning:p[1]})));
