@@ -40,6 +40,7 @@ jobs:
           app = Path("app.js").read_text(encoding="utf-8")
           cards = Path("flashcards.js").read_text(encoding="utf-8")
           assert 'data-view="flashcards"' in html
+          assert 'data-view="listening"' in html
           assert 'manifest.webmanifest' in html and 'icon.svg' in html
           assert 'serviceWorker.register("./sw.js")' in app
           sw = Path("sw.js").read_text(encoding="utf-8")
@@ -78,6 +79,8 @@ jobs:
           css = Path("styles.css").read_text(encoding="utf-8")
           assert "@media(max-width:850px)" in css
           assert "@media(max-width:620px)" in css
+          assert ".listening-options" in css and ".listening-choice.is-correct" in css
+          assert 'function listening()' in app and 'data-listening-option' in app
           assert "confirm_public_publish" in pages
           assert "manifest.webmanifest" in pages and "sw.js" in pages
           print("Frontend integration checks passed.")
