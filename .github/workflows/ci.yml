@@ -81,6 +81,9 @@ jobs:
           assert "@media(max-width:620px)" in css
           assert ".listening-options" in css and ".listening-choice.is-correct" in css
           assert 'function listening()' in app and 'data-listening-option' in app
+          assert 'wrongQuestions.push(q)' in app
+          assert 'id="listen-retry-missed"' in app
+          assert 'questions=[...wrongQuestions]' in app
           assert "confirm_public_publish" in pages
           assert "manifest.webmanifest" in pages and "sw.js" in pages
           print("Frontend integration checks passed.")

@@ -90,18 +90,27 @@ function vocabulary(){
 
 function listening(){
  const all=lessons.flatMap(l=>l.phrases.map(p=>({lesson:l.title,english:p[0],vietnamese:p[1]})));
- let questions=[],index=0,score=0;
+ let questions=[],index=0,score=0,wrongQuestions=[];
  function makeQuestions(){
   questions=[...all].sort(()=>Math.random()-.5).slice(0,8).map(question=>{
    const distractors=[...new Set(all.filter(item=>item.vietnamese!==question.vietnamese).map(item=>item.vietnamese))].sort(()=>Math.random()-.5).slice(0,3);
    return {...question,options:[question.vietnamese,...distractors].sort(()=>Math.random()-.5)};
   });
-  index=0;score=0;render();
+  index=0;score=0;wrongQuestions=[];render();
  }
  function render(){
   if(index>=questions.length){
-   box.innerHTML='<p class="eyebrow">NGHE HIỂU · A1</p><h2>Hoàn thành lượt nghe 🎉</h2><div class="word"><strong>'+score+'/'+questions.length+' câu đúng</strong><p class="muted">Hãy nghe lại những câu khó và thử một lượt mới để ghi nhớ lâu hơn.</p></div><div class="flash-actions"><button class="action primary" id="listen-restart">Luyện lượt khác</button><button class="action" id="listen-home">Về tổng quan</button></div><p class="muted">Âm thanh được tạo bởi giọng đọc của trình duyệt; điểm số chỉ phản ánh câu trả lời nghĩa, không phải điểm phát âm.</p>';
-   $("#listen-restart").onclick=makeQuestions;$("#listen-home").onclick=()=>show("home");return;
+   const missedHtml=wrongQuestions.length
+    ? `<div class="word"><b>Câu cần luyện lại (${wrongQuestions.length})</b>${wrongQuestions.map(item=>`<p><b>${item.english}</b><br>${item.vietnamese}</p>`).join("")}</div>`
+    : '<div class="word-match">Tuyệt vời! Bạn trả lời đúng tất cả các câu.</div>';
+   const retryButton=wrongQuestions.length
+    ? '<button class="action" id="listen-retry-missed">Luyện lại '+wrongQuestions.length+' câu sai</button>'
+    : "";
+   box.innerHTML='<p class="eyebrow">NGHE HIỂU · A1</p><h2>Hoàn thành lượt nghe 🎉</h2><div class="word"><strong>'+score+'/'+questions.length+' câu đúng</strong><p class="muted">Hãy nghe lại những câu khó và thử một lượt mới để ghi nhớ lâu hơn.</p></div>'+missedHtml+'<div class="flash-actions"><button class="action primary" id="listen-restart">Luyện lượt khác</button>'+retryButton+'<button class="action" id="listen-home">Về tổng quan</button></div><p class="muted">Âm thanh được tạo bởi giọng đọc của trình duyệt; điểm số chỉ phản ánh câu trả lời nghĩa, không phải điểm phát âm.</p>';
+   $("#listen-restart").onclick=makeQuestions;$("#listen-home").onclick=()=>show("home");
+   const retry=$("#listen-retry-missed");
+   if(retry)retry.onclick=()=>{questions=[...wrongQuestions];wrongQuestions=[];index=0;score=0;render();};
+   return;
   }
   const q=questions[index];
   box.innerHTML='<p class="eyebrow">NGHE HIỂU · A1</p><div class="flash-head"><div><h2>Nghe và chọn nghĩa</h2><p class="muted">'+q.lesson+'</p></div><span class="flash-count">'+(index+1)+' / '+questions.length+'</span></div><div class="flash-progress"><span style="width:'+Math.round(index/questions.length*100)+'%"></span></div><div class="word"><p><b>1.</b> Nghe câu tiếng Anh, sau đó chọn nghĩa đúng bằng tiếng Việt.</p><div class="flash-actions"><button class="action flash-reveal" id="listen-play">🔊 Phát câu</button><button class="action" id="listen-replay">↻ Nghe lại</button></div><p id="listen-transcript" class="muted" aria-live="polite">Nội dung câu sẽ hiện sau khi bạn trả lời.</p></div><div class="word"><b>Chọn nghĩa phù hợp</b><div class="listening-options">'+q.options.map((option,i)=>'<button class="action listening-choice" data-listening-option="'+i+'">'+option+'</button>').join("")+'</div><p id="listen-feedback" class="muted" aria-live="polite">Bạn có thể nghe lại trước khi chọn.</p><button class="action" id="listen-next" disabled>'+(index===questions.length-1?'Xem kết quả':'Câu tiếp theo →')+'</button></div><p class="muted">Giọng đọc dùng Web Speech API của thiết bị, có thể khác nhau tùy trình duyệt và giọng đã cài. Bài này kiểm tra nghe hiểu nghĩa, không chấm phát âm.</p>';
@@ -114,7 +123,7 @@ function listening(){
   box.querySelectorAll("[data-listening-option]").forEach(button=>button.onclick=()=>{
    if(button.disabled)return;
    const selected=Number(button.dataset.listeningOption),correct=q.options[selected]===q.vietnamese;
-   if(correct)score++;
+   if(correct)score++;else wrongQuestions.push(q);
    box.querySelectorAll("[data-listening-option]").forEach(option=>{
     option.disabled=true;
     const isAnswer=q.options[Number(option.dataset.listeningOption)]===q.vietnamese;
