@@ -46,9 +46,9 @@ def test_daily_routine_lesson():
 
 
 
-def test_every_a1_lesson_includes_grammar_and_a_valid_practice_question():
+def test_all_twelve_a1_lessons_include_grammar_and_a_valid_practice_question():
     payload = client.get("/api/v1/lessons").json()
-    assert payload["total"] == 6
+    assert payload["total"] == 12
     for lesson in payload["items"]:
         grammar = lesson["grammar"]
         assert grammar["title"]
