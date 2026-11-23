@@ -48,6 +48,8 @@ jobs:
           assert 'flashcards.js' in html and 'flashcards.css' in html
           assert 'flashcards:[' in app
           assert 'daily-routine' in app
+          assert 'numbers-time' in app and 'home-rooms' in app and 'transport' in app
+          assert 'weather-clothes' in app and 'hobbies' in app and 'health' in app
           assert 'SpeechRecognition' in app or 'MediaRecorder' in app
           assert 'normalizeWords' in app
           assert 'MediaRecorder' in app

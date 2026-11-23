@@ -179,6 +179,115 @@ LESSONS = [
             {"english": "Is it far from here?", "vietnamese": "Nó có xa đây không?"}
         ]
     }
+    ,{
+        "id": "numbers-time", "level": "A1", "title": "Số đếm & thời gian",
+        "description": "Nói về số, ngày trong tuần và giờ giấc.",
+        "vocabulary": [
+            {"word": "one", "meaning_vi": "một"}, {"word": "two", "meaning_vi": "hai"},
+            {"word": "three", "meaning_vi": "ba"}, {"word": "ten", "meaning_vi": "mười"},
+            {"word": "twenty", "meaning_vi": "hai mươi"}, {"word": "today", "meaning_vi": "hôm nay"},
+            {"word": "tomorrow", "meaning_vi": "ngày mai"}, {"word": "Monday", "meaning_vi": "thứ Hai"},
+            {"word": "clock", "meaning_vi": "đồng hồ"}, {"word": "time", "meaning_vi": "thời gian, giờ"}
+        ],
+        "phrases": [
+            {"english": "What time is it?", "vietnamese": "Bây giờ là mấy giờ?"},
+            {"english": "It is seven o'clock.", "vietnamese": "Bây giờ là bảy giờ."},
+            {"english": "Today is Monday.", "vietnamese": "Hôm nay là thứ Hai."},
+            {"english": "My birthday is in May.", "vietnamese": "Sinh nhật tôi vào tháng Năm."},
+            {"english": "See you tomorrow.", "vietnamese": "Hẹn gặp bạn ngày mai."}
+        ]
+    },
+    {
+        "id": "home-rooms", "level": "A1", "title": "Nhà cửa & phòng ốc",
+        "description": "Gọi tên các phòng và đồ vật quen thuộc trong nhà.",
+        "vocabulary": [
+            {"word": "house", "meaning_vi": "ngôi nhà"}, {"word": "apartment", "meaning_vi": "căn hộ"},
+            {"word": "room", "meaning_vi": "căn phòng"}, {"word": "kitchen", "meaning_vi": "nhà bếp"},
+            {"word": "bedroom", "meaning_vi": "phòng ngủ"}, {"word": "bathroom", "meaning_vi": "phòng tắm"},
+            {"word": "living room", "meaning_vi": "phòng khách"}, {"word": "door", "meaning_vi": "cánh cửa"},
+            {"word": "window", "meaning_vi": "cửa sổ"}, {"word": "table", "meaning_vi": "cái bàn"}
+        ],
+        "phrases": [
+            {"english": "This is my house.", "vietnamese": "Đây là nhà của tôi."},
+            {"english": "The kitchen is small.", "vietnamese": "Nhà bếp nhỏ."},
+            {"english": "There is a table in the room.", "vietnamese": "Có một cái bàn trong phòng."},
+            {"english": "My bedroom is upstairs.", "vietnamese": "Phòng ngủ của tôi ở tầng trên."},
+            {"english": "The window is open.", "vietnamese": "Cửa sổ đang mở."}
+        ]
+    },
+    {
+        "id": "transport", "level": "A1", "title": "Phương tiện đi lại",
+        "description": "Nói về phương tiện và hỏi những thông tin đi đường cơ bản.",
+        "vocabulary": [
+            {"word": "bus", "meaning_vi": "xe buýt"}, {"word": "train", "meaning_vi": "tàu hỏa"},
+            {"word": "car", "meaning_vi": "ô tô"}, {"word": "taxi", "meaning_vi": "taxi"},
+            {"word": "bicycle", "meaning_vi": "xe đạp"}, {"word": "ticket", "meaning_vi": "vé"},
+            {"word": "airport", "meaning_vi": "sân bay"}, {"word": "bus stop", "meaning_vi": "trạm xe buýt"},
+            {"word": "travel", "meaning_vi": "du lịch, đi lại"}, {"word": "walk", "meaning_vi": "đi bộ"}
+        ],
+        "phrases": [
+            {"english": "I go to work by bus.", "vietnamese": "Tôi đi làm bằng xe buýt."},
+            {"english": "Where is the bus stop?", "vietnamese": "Trạm xe buýt ở đâu?"},
+            {"english": "I need a ticket.", "vietnamese": "Tôi cần một vé."},
+            {"english": "The train is late.", "vietnamese": "Tàu hỏa đến muộn."},
+            {"english": "We walk to school.", "vietnamese": "Chúng tôi đi bộ đến trường."}
+        ]
+    },
+    {
+        "id": "weather-clothes", "level": "A1", "title": "Thời tiết & quần áo",
+        "description": "Miêu tả thời tiết và gọi tên trang phục hằng ngày.",
+        "vocabulary": [
+            {"word": "weather", "meaning_vi": "thời tiết"}, {"word": "sunny", "meaning_vi": "có nắng"},
+            {"word": "rainy", "meaning_vi": "có mưa"}, {"word": "cloudy", "meaning_vi": "nhiều mây"},
+            {"word": "hot", "meaning_vi": "nóng"}, {"word": "cold", "meaning_vi": "lạnh"},
+            {"word": "shirt", "meaning_vi": "áo sơ mi"}, {"word": "jacket", "meaning_vi": "áo khoác"},
+            {"word": "shoes", "meaning_vi": "giày"}, {"word": "umbrella", "meaning_vi": "ô, dù"}
+        ],
+        "phrases": [
+            {"english": "It is sunny today.", "vietnamese": "Hôm nay trời nắng."},
+            {"english": "It is cold outside.", "vietnamese": "Bên ngoài trời lạnh."},
+            {"english": "I wear a jacket.", "vietnamese": "Tôi mặc áo khoác."},
+            {"english": "Take an umbrella, please.", "vietnamese": "Hãy mang theo ô nhé."},
+            {"english": "What is the weather like?", "vietnamese": "Thời tiết thế nào?"}
+        ]
+    },
+    {
+        "id": "hobbies", "level": "A1", "title": "Sở thích & thời gian rảnh",
+        "description": "Chia sẻ những hoạt động yêu thích và việc làm cuối tuần.",
+        "vocabulary": [
+            {"word": "music", "meaning_vi": "âm nhạc"}, {"word": "movie", "meaning_vi": "phim"},
+            {"word": "book", "meaning_vi": "quyển sách"}, {"word": "read", "meaning_vi": "đọc"},
+            {"word": "swim", "meaning_vi": "bơi"}, {"word": "run", "meaning_vi": "chạy"},
+            {"word": "sing", "meaning_vi": "hát"}, {"word": "dance", "meaning_vi": "nhảy, khiêu vũ"},
+            {"word": "game", "meaning_vi": "trò chơi"}, {"word": "weekend", "meaning_vi": "cuối tuần"}
+        ],
+        "phrases": [
+            {"english": "I like listening to music.", "vietnamese": "Tôi thích nghe nhạc."},
+            {"english": "I read a book at night.", "vietnamese": "Tôi đọc sách vào buổi tối."},
+            {"english": "We play games on Sunday.", "vietnamese": "Chúng tôi chơi trò chơi vào Chủ nhật."},
+            {"english": "I can swim.", "vietnamese": "Tôi biết bơi."},
+            {"english": "What do you do at weekends?", "vietnamese": "Bạn thường làm gì vào cuối tuần?"}
+        ]
+    },
+    {
+        "id": "health", "level": "A1", "title": "Sức khỏe cơ bản",
+        "description": "Nói về một số triệu chứng đơn giản và nhu cầu chăm sóc sức khỏe.",
+        "vocabulary": [
+            {"word": "doctor", "meaning_vi": "bác sĩ"}, {"word": "nurse", "meaning_vi": "y tá"},
+            {"word": "clinic", "meaning_vi": "phòng khám"}, {"word": "headache", "meaning_vi": "đau đầu"},
+            {"word": "toothache", "meaning_vi": "đau răng"}, {"word": "fever", "meaning_vi": "sốt"},
+            {"word": "cough", "meaning_vi": "ho"}, {"word": "medicine", "meaning_vi": "thuốc"},
+            {"word": "rest", "meaning_vi": "nghỉ ngơi"}, {"word": "sick", "meaning_vi": "ốm, bệnh"}
+        ],
+        "phrases": [
+            {"english": "I have a headache.", "vietnamese": "Tôi bị đau đầu."},
+            {"english": "I need to see a doctor.", "vietnamese": "Tôi cần đi khám bác sĩ."},
+            {"english": "She has a fever.", "vietnamese": "Cô ấy bị sốt."},
+            {"english": "Please drink some water.", "vietnamese": "Hãy uống một chút nước."},
+            {"english": "I need some rest.", "vietnamese": "Tôi cần nghỉ ngơi."}
+        ]
+    }
+
 ]
 
 GRAMMAR_LESSONS = {
@@ -188,6 +297,14 @@ GRAMMAR_LESSONS = {
     "food-drinks": {"title": "A / an / some", "explanation_vi": "Dùng a/an với danh từ đếm được số ít; dùng some với danh từ không đếm được hoặc danh từ số nhiều.", "example": "an apple · a sandwich · some water", "question_vi": "I would like ___ water.", "options": ["a", "an", "some"], "answer": "some", "feedback_vi": "Water là danh từ không đếm được nên dùng some."},
     "shopping": {"title": "Hỏi giá với How much", "explanation_vi": "Dùng How much is this? để hỏi giá một món hàng hoặc hỏi lượng không đếm được.", "example": "How much is this? It is ten dollars.", "question_vi": "How ___ is this?", "options": ["many", "much", "old"], "answer": "much", "feedback_vi": "How much dùng để hỏi giá; How many dùng với danh từ đếm được số nhiều."},
     "places-directions": {"title": "Câu mệnh lệnh khi chỉ đường", "explanation_vi": "Dùng động từ nguyên mẫu ở đầu câu để đưa ra chỉ dẫn; không thêm -s hoặc -ing.", "example": "Go straight. Turn left at the corner.", "question_vi": "___ left at the corner.", "options": ["Turn", "Turns", "Turning"], "answer": "Turn", "feedback_vi": "Câu mệnh lệnh bắt đầu bằng động từ nguyên mẫu Turn."},
+
+    "numbers-time": {"title": "Hỏi và nói giờ với What time", "explanation_vi": "Dùng What time is it? để hỏi giờ. Trả lời bằng It's + giờ + o'clock khi nói giờ đúng.", "example": "What time is it? It is seven o'clock.", "question_vi": "It is ___ o'clock.", "options": ["seven", "at seven", "on seven"], "answer": "seven", "feedback_vi": "Sau It is, nói trực tiếp giờ: seven o'clock."},
+    "home-rooms": {"title": "There is / There are", "explanation_vi": "Dùng There is với một người hoặc vật; dùng There are với danh từ số nhiều.", "example": "There is a table in the room. There are two chairs.", "question_vi": "There ___ a table in the room.", "options": ["is", "are", "be"], "answer": "is", "feedback_vi": "A table là danh từ số ít nên dùng There is."},
+    "transport": {"title": "By + phương tiện", "explanation_vi": "Dùng by trước phương tiện khi nói cách di chuyển: by bus, by train, by car.", "example": "I go to work by bus.", "question_vi": "I go to work ___ bus.", "options": ["by", "on", "at"], "answer": "by", "feedback_vi": "Dùng by bus để nói đi bằng xe buýt."},
+    "weather-clothes": {"title": "Tính từ sau động từ be", "explanation_vi": "Dùng am/is/are trước tính từ để miêu tả thời tiết hoặc trạng thái.", "example": "It is sunny today. The weather is cold.", "question_vi": "It is ___ today.", "options": ["sunny", "sun", "sunning"], "answer": "sunny", "feedback_vi": "Sunny là tính từ; sun là danh từ chỉ mặt trời."},
+    "hobbies": {"title": "Can + động từ nguyên mẫu", "explanation_vi": "Dùng can + động từ nguyên mẫu để nói về khả năng. Không thêm -s hoặc -ing sau can.", "example": "I can swim. She can sing.", "question_vi": "I can ___.", "options": ["swim", "swims", "swimming"], "answer": "swim", "feedback_vi": "Sau can, dùng động từ nguyên mẫu swim."},
+    "health": {"title": "Have / has khi nói triệu chứng", "explanation_vi": "Dùng have với I/you/we/they và has với he/she/it khi nói về triệu chứng.", "example": "I have a headache. She has a fever.", "question_vi": "She ___ a fever.", "options": ["have", "has", "having"], "answer": "has", "feedback_vi": "Với chủ ngữ She, dùng has."},
+
 }
 
 for lesson in LESSONS:

@@ -12,13 +12,14 @@ def test_health():
     assert response.json()["status"] == "ok"
 
 
-def test_list_lessons_contains_six_a1_lessons():
+def test_list_lessons_contains_twelve_a1_lessons():
     response = client.get("/api/v1/lessons")
     assert response.status_code == 200
     payload = response.json()
-    assert payload["total"] == 6
+    assert payload["total"] == 12
     assert {item["id"] for item in payload["items"]} == {
-        "greetings", "family", "daily-routine", "food-drinks", "shopping", "places-directions"
+        "greetings", "family", "daily-routine", "food-drinks", "shopping", "places-directions",
+        "numbers-time", "home-rooms", "transport", "weather-clothes", "hobbies", "health"
     }
 
 
@@ -160,7 +161,7 @@ def test_cors_rejects_unlisted_origins():
 
 
 def test_additional_a1_lessons_have_ten_words_and_five_phrases():
-    for lesson_id in ("food-drinks", "shopping", "places-directions"):
+    for lesson_id in ("food-drinks", "shopping", "places-directions", "numbers-time", "home-rooms", "transport", "weather-clothes", "hobbies", "health"):
         response = client.get(f"/api/v1/lessons/{lesson_id}")
         assert response.status_code == 200
         lesson = response.json()
@@ -247,3 +248,10 @@ def test_pronunciation_upload_rejects_payload_over_12mb(monkeypatch):
         data={"expected_text": "Hello"},
     )
     assert response.status_code == 413
+
+def test_expanded_a1_curriculum_has_114_words_and_60_phrases():
+    payload = client.get("/api/v1/lessons").json()
+    assert sum(len(item["vocabulary"]) for item in payload["items"]) == 114
+    assert sum(len(item["phrases"]) for item in payload["items"]) == 60
+    assert len({word["word"].lower() for item in payload["items"] for word in item["vocabulary"]}) == 114
+

@@ -16,7 +16,7 @@ Website học tiếng Anh độc lập cho người Việt mới bắt đầu (A
 - GitHub chỉ cho chạy `workflow_dispatch` khi file workflow đã có trên nhánh mặc định. Workflow hiện chỉ nằm trên `feature/interactive-flashcards`, nên nút chạy thủ công chỉ xuất hiện sau khi chủ repository duyệt đưa workflow lên `main`; PR chưa được merge và automation không tự làm việc đó.
 
 ## Tính năng hiện có
-- [x] Trang tổng quan và lộ trình 6 bài học A1: chào hỏi, gia đình, công việc hằng ngày, đồ ăn & thức uống, mua sắm, địa điểm & chỉ đường.
+- [x] Trang tổng quan và lộ trình 12 bài học A1: chào hỏi, gia đình, công việc hằng ngày, đồ ăn & thức uống, mua sắm, địa điểm & chỉ đường.
 - [x] Từ vựng, phiên âm IPA, mẫu câu song ngữ và đọc mẫu bằng Web Speech API.
 - [x] Luyện nghe hiểu A1: nghe câu bằng giọng đọc của trình duyệt, chọn nghĩa tiếng Việt, xem câu sai và luyện lại riêng các câu sai; không nhầm với chấm phát âm.
 - [x] Thẻ ghi nhớ: lật thẻ, lọc từ chưa nhớ, xáo trộn, đặt lại tiến độ và lưu cục bộ.
