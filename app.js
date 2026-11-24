@@ -66,7 +66,7 @@ function show(name){
  if(name!=="speaking"&&typeof window.stopSpeakingCapture==="function"){window.stopSpeakingCapture();window.stopSpeakingCapture=null}
  document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.view===name));
  [".hero",".stats",".columns"].forEach(s=>$(s).classList.toggle("hidden",name!=="home"));box.classList.toggle("hidden",name==="home");
- const titles={home:["Chào bạn! ✦","Mỗi ngày tiến bộ một chút. Hôm nay mình cùng học nhé!"],path:["Lộ trình học","Học từng chủ đề nhỏ, đi từ dễ đến khó."],vocabulary:["Từ vựng","Nghe, đọc và ghi nhớ những từ thông dụng."],speaking:["Luyện nói","Nghe mẫu, nói theo và xem từ nào được trình duyệt nhận diện."],review:["Ôn tập","Kiểm tra nhanh kiến thức từ cả sáu chủ đề."],listening:["Nghe hiểu","Nghe câu tiếng Anh và chọn nghĩa tiếng Việt phù hợp."],flashcards:["Thẻ ghi nhớ","Ôn từ vựng bằng cách tự nhớ nghĩa trước khi lật thẻ."]};
+ const titles={home:["Chào bạn! ✦","Mỗi ngày tiến bộ một chút. Hôm nay mình cùng học nhé!"],path:["Lộ trình học","Học từng chủ đề nhỏ, đi từ dễ đến khó."],vocabulary:["Từ vựng","Nghe, đọc và ghi nhớ những từ thông dụng."],speaking:["Luyện nói","Nghe mẫu, nói theo và xem từ nào được trình duyệt nhận diện."],review:["Ôn tập","Kiểm tra nhanh kiến thức từ cả 12 chủ đề."],listening:["Nghe hiểu","Nghe câu tiếng Anh và chọn nghĩa tiếng Việt phù hợp."],flashcards:["Thẻ ghi nhớ","Ôn từ vựng bằng cách tự nhớ nghĩa trước khi lật thẻ."]};
  $("#heading").textContent=titles[name][0];$("#subheading").textContent=titles[name][1];
  if(name==="path")path();if(name==="vocabulary")vocabulary();if(name==="listening")listening();if(name==="speaking")speaking();if(name==="review")review();
 }
@@ -291,6 +291,82 @@ function speaking(){
   }catch(error){if(stream)stream.getTracks().forEach(track=>track.stop());stream=null;status.textContent=error.name==="NotAllowedError"?"Bạn chưa cấp quyền sử dụng micro. Hãy bật quyền micro cho website.":"Không thể mở micro: "+error.message}
  };
 }
+
+function bindProgressBackup(){
+ const exportButton=$("#export-progress"),importButton=$("#import-progress-trigger"),fileInput=$("#import-progress-file"),status=$("#backup-status");
+ if(!exportButton||!importButton||!fileInput||!status)return;
+ exportButton.onclick=()=>{
+  try{
+   flushStudyTime();
+   const known=read("ela-flashcards-known",[]);
+   const payload={
+    format:"english-learning-ai-progress",
+    version:1,
+    exportedAt:new Date().toISOString(),
+    progress:{
+     completedLessons:[...completed].filter(id=>lessons.some(lesson=>lesson.id===id)).sort(),
+     studySeconds:totalSeconds,
+     streak:Number(localStorage.getItem(keys.streak)||0),
+     lastStudyDay:localStorage.getItem(keys.lastDay)||null,
+     knownWords:Array.isArray(known)?known.filter(word=>typeof word==="string").sort():[]
+    }
+   };
+   const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
+   const url=URL.createObjectURL(blob),link=document.createElement("a");
+   link.href=url;link.download="english-learning-ai-progress-"+localDay()+".json";
+   document.body.appendChild(link);link.click();link.remove();
+   window.setTimeout(()=>URL.revokeObjectURL(url),1000);
+   status.textContent="Đã tạo bản sao lưu JSON. Hãy giữ tệp này để chuyển tiến độ sang thiết bị khác.";
+  }catch(error){status.textContent="Không thể tạo bản sao lưu: "+error.message}
+ };
+ importButton.onclick=()=>fileInput.click();
+ fileInput.onchange=async()=>{
+  const file=fileInput.files&&fileInput.files[0];fileInput.value="";
+  if(!file)return;
+  if(file.size>128*1024){status.textContent="Tệp sao lưu quá lớn hoặc không hợp lệ (tối đa 128 KB).";return}
+  try{
+   const raw=await new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>resolve(String(reader.result||""));
+    reader.onerror=()=>reject(new Error("Không đọc được tệp đã chọn."));
+    reader.readAsText(file);
+   });
+   const backup=JSON.parse(raw),p=backup&&backup.progress;
+   const validIds=new Set(lessons.map(lesson=>lesson.id));
+   const validWords=new Set(lessons.flatMap(lesson=>lesson.words.map(word=>word[0])));
+   const validDay=value=>{
+    if(value===null)return true;
+    if(typeof value!=="string"||!/^\d{4}-\d{2}-\d{2}$/.test(value))return false;
+    const date=new Date(value+"T00:00:00");
+    return !Number.isNaN(date.getTime())&&localDay(date)===value;
+   };
+   const valid=backup&&backup.format==="english-learning-ai-progress"&&backup.version===1&&p&&
+    Array.isArray(p.completedLessons)&&p.completedLessons.every(id=>typeof id==="string"&&validIds.has(id))&&
+    Number.isSafeInteger(p.studySeconds)&&p.studySeconds>=0&&p.studySeconds<=1000000000&&
+    Number.isSafeInteger(p.streak)&&p.streak>=0&&p.streak<=36500&&
+    validDay(p.lastStudyDay)&&Array.isArray(p.knownWords)&&
+    p.knownWords.every(word=>typeof word==="string"&&validWords.has(word));
+   if(!valid)throw new Error("Cấu trúc hoặc phiên bản tệp không đúng. Tiến độ hiện tại chưa bị thay đổi.");
+   if(!window.confirm("Gộp tiến độ từ bản sao lưu vào dữ liệu hiện tại? Các bài đã hoàn thành và từ đã nhớ sẽ được cộng thêm, không xóa dữ liệu đang có."))return;
+   flushStudyTime();
+   p.completedLessons.forEach(id=>completed.add(id));
+   localStorage.setItem(keys.completed,JSON.stringify([...completed]));
+   const currentKnown=read("ela-flashcards-known",[]);
+   const mergedKnown=new Set([...(Array.isArray(currentKnown)?currentKnown.filter(word=>validWords.has(word)):[]),...p.knownWords]);
+   localStorage.setItem("ela-flashcards-known",JSON.stringify([...mergedKnown].sort()));
+   totalSeconds=Math.max(totalSeconds,p.studySeconds);
+   localStorage.setItem(keys.minutes,String(totalSeconds));
+   const currentStreak=Number(localStorage.getItem(keys.streak)||0);
+   localStorage.setItem(keys.streak,String(Math.max(Number.isSafeInteger(currentStreak)&&currentStreak>=0?currentStreak:0,p.streak)));
+   const currentDay=localStorage.getItem(keys.lastDay)||"";
+   const latestDay=[currentDay,p.lastStudyDay].filter(day=>day&&validDay(day)).sort().pop();
+   if(latestDay)localStorage.setItem(keys.lastDay,latestDay);
+   updateProgress();
+   status.textContent="Đã gộp tiến độ thành công. Bài đã học và từ đã nhớ trên thiết bị này được giữ nguyên.";
+  }catch(error){status.textContent="Không thể nhập bản sao lưu: "+error.message}
+ };
+}
+
 function review(){
  const all=lessons.flatMap(l=>l.words.map(w=>({question:"“"+w[0]+"” có nghĩa là gì?",answer:w[1],lesson:l.title})));
  const questions=[...all].sort(()=>Math.random()-.5).slice(0,8);let score=0,answered=0;
@@ -299,7 +375,8 @@ function review(){
   const distractors=[...new Set(all.filter(x=>x.answer!==q.answer).map(x=>x.answer))].sort(()=>Math.random()-.5).slice(0,2);
   const options=[q.answer,...distractors].sort(()=>Math.random()-.5);
   return '<div class="word"><b>'+(i+1)+'. '+q.question+'</b><small>'+q.lesson+'</small><div>'+options.map(o=>'<button class="action" data-question="'+i+'" data-option="'+encodeURIComponent(o)+'">'+o+'</button>').join("")+'</div><small id="feedback-'+i+'" aria-live="polite"></small></div>';
- }).join("")+'<h3 id="quiz-score">Đã trả lời 0/'+questions.length+'</h3>';
+ }).join("")+'<h3 id="quiz-score">Đã trả lời 0/'+questions.length+'</h3>'+
+ '<section class="word progress-backup"><h3>Sao lưu tiến độ</h3><p class="muted">Tải tiến độ học thành tệp JSON để giữ bản dự phòng hoặc chuyển sang thiết bị khác. Khi nhập, dữ liệu sẽ được gộp, không xóa tiến độ đang có.</p><div class="flash-actions"><button class="action" id="export-progress">↓ Tải bản sao lưu</button><button class="action" id="import-progress-trigger">＋ Chọn tệp để gộp</button><input id="import-progress-file" type="file" accept=".json,application/json" hidden></div><p id="backup-status" class="muted" role="status" aria-live="polite">Bản sao lưu chỉ chứa tiến độ học, không chứa thông tin cá nhân.</p></section>';
  box.querySelectorAll("[data-question]").forEach(b=>b.onclick=()=>{
   const i=Number(b.dataset.question),q=questions[i],feedback=$("#feedback-"+i);if(feedback.dataset.answered)return;
   const selected=decodeURIComponent(b.dataset.option);feedback.dataset.answered="true";answered++;
@@ -307,6 +384,7 @@ function review(){
   box.querySelectorAll('[data-question="'+i+'"]').forEach(option=>option.disabled=true);
   $("#quiz-score").textContent="Kết quả: "+score+"/"+answered+" câu đã trả lời";markStudyDay();
  });
+ bindProgressBackup();
 }
 document.querySelectorAll("[data-view]").forEach(b=>b.onclick=()=>show(b.dataset.view));
 $("#start").onclick=()=>{show("path");lesson("greetings")};

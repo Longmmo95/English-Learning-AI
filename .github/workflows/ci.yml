@@ -62,6 +62,10 @@ jobs:
           assert 'localStorage' in cards
           assert 'toggle-review' in cards and 'shuffle' in cards and 'reset' in cards
           assert 'reviewOnly' in cards and 'known.clear()' in cards
+          assert 'function bindProgressBackup()' in app
+          assert 'Sao lưu tiến độ' in app and 'english-learning-ai-progress' in app
+          assert 'FileReader' in app and 'Gộp tiến độ từ bản sao lưu' in app
+          assert 'cả sáu chủ đề' not in app
           assert 'if (reviewOnly) { if (index >= deck().length) index = 0; }' in cards
           assert 'data-lesson-id="daily-routine"' in html
           assert "const grammarLessons =" in app
