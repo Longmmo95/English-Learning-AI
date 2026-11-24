@@ -354,6 +354,7 @@ function bindProgressBackup(){
    const currentKnown=read("ela-flashcards-known",[]);
    const mergedKnown=new Set([...(Array.isArray(currentKnown)?currentKnown.filter(word=>validWords.has(word)):[]),...p.knownWords]);
    localStorage.setItem("ela-flashcards-known",JSON.stringify([...mergedKnown].sort()));
+   window.dispatchEvent(new Event("ela-progress-imported"));
    totalSeconds=Math.max(totalSeconds,p.studySeconds);
    localStorage.setItem(keys.minutes,String(totalSeconds));
    const currentStreak=Number(localStorage.getItem(keys.streak)||0);

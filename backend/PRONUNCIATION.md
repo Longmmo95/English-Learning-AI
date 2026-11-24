@@ -5,10 +5,10 @@ GitHub Pages chỉ chạy giao diện tĩnh. Máy chấm âm thanh phải chạy
 ## Engine và giới hạn
 
 - Engine: https://github.com/Halleck45/OpenPronounce, giấy phép MIT.
-- Phiên bản được khóa: `openpronounce==0.4.0` (MIT). Bản 1.0.0 phát hành ngày 18/11/2026 dùng giấy phép AGPL-3.0 và API `assess()` mới; dự án giữ 0.4.0 để tránh đổi giấy phép/API ngoài ý muốn. Chỉ nâng cấp sau khi rà soát giấy phép và chuyển đổi/kiểm thử cả FastAPI lẫn Gradio adapter.
-- Wav2Vec2 nhận diện âm vị; so sánh âm thanh người học với câu mẫu, trả về điểm tổng, danh sách từ có lỗi và IPA. Phiên bản 0.4.0 không cung cấp điểm số riêng đã hiệu chuẩn cho từng từ; trường `confidence` là độ tin cậy phát hiện lỗi, không phải điểm phát âm của từ.
+- Phiên bản đang khóa: `openpronounce==0.4.0` (MIT; các bản phát hành đến 0.4 giữ giấy phép MIT). Bản 1.0.0 (18/11/2026) và 1.1.0 (19/11/2026) chuyển sang AGPL-3.0; API mới dùng `assess()` và có trường `reliable` để báo khi không nên hiển thị điểm. Bản 1.1.0 bổ sung tùy chọn mô hình phone Wav2Vec2-base đã chưng cất. Dự án chưa tự nâng cấp vì cần rà soát nghĩa vụ AGPL, chuyển đổi API và kiểm thử cả FastAPI lẫn Gradio adapter.
+- Wav2Vec2 nhận diện âm vị; so sánh âm thanh người học với câu mẫu, trả về điểm tổng, danh sách từ có lỗi và IPA. Phiên bản 0.4.0 không cung cấp điểm số riêng đã hiệu chuẩn cho từng từ; trường `confidence` là độ tin cậy phát hiện lỗi, không phải điểm phát âm của từ. Bản upstream 1.1.0 cũng báo từ/âm vị cần luyện và độ tin cậy theo âm, không phải điểm số riêng đã hiệu chuẩn cho từng từ.
 - Tiếng Anh là ngôn ngữ đã được hiệu chỉnh theo dữ liệu đánh giá. Đây là ước lượng hỗ trợ học tập, không phải chứng nhận năng lực.
-- Hai checkpoint tải về khoảng 2,4 GB trong lần phân tích đầu tiên. Máy chủ cần dung lượng đĩa, RAM và CPU phù hợp; lần đầu có thể chờ lâu.
+- Tài liệu upstream hiện mô tả hai checkpoint Wav2Vec2 khoảng 1,2 GB mỗi checkpoint; chế độ `--fast` dùng một checkpoint. Bản 1.1.0 có thêm tùy chọn phone model chưng cất, nhưng chưa được kiểm tra kích thước/tài nguyên thực tế trong dự án này. Máy chủ cần dung lượng đĩa, RAM và CPU phù hợp; lần đầu có thể chờ lâu.
 - Cần cài ffmpeg và espeak-ng. Không chạy mô hình trong GitHub Pages hoặc CI thông thường.
 
 ## Cài trên Ubuntu/Linux
@@ -33,6 +33,8 @@ GitHub Pages chỉ chạy giao diện tĩnh. Máy chấm âm thanh phải chạy
 
 - GET /api/v1/pronunciation/status
 - POST /api/v1/pronunciation/analyze với multipart fields file và expected_text.
+
+Gradio Space trong `huggingface-space/` là bản demo độc lập, không phải FastAPI endpoint mà website gọi trực tiếp. Không nhập URL của Space Gradio vào ô backend của website; muốn nối cần có proxy FastAPI riêng và kiểm thử bảo mật/CORS.
 
 ## Kết nối giao diện
 

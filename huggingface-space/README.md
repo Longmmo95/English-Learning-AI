@@ -26,8 +26,9 @@ Không chọn CPU Basic/Docker trả phí và không bật phần cứng tính p
 
 ## Yêu cầu và giới hạn
 
-- Tài khoản ZeroGPU miễn phí phải đủ điều kiện theo chính sách hiện hành của Hugging Face.
-- ZeroGPU chỉ hỗ trợ SDK Gradio; Space này không chạy FastAPI.
+- Tài khoản cá nhân miễn phí phải đủ điều kiện theo chính sách hiện hành của Hugging Face (tài khoản tốt, email xác minh và đủ tuổi tài khoản); tài khoản đủ điều kiện có thể tạo tối đa 2 ZeroGPU Spaces.
+- Hạn mức ZeroGPU của tài khoản Free hiện là 5 phút GPU mỗi ngày; đây là demo thử nghiệm, không phải máy chủ luôn hoạt động. ZeroGPU chỉ hỗ trợ SDK Gradio; Space này không chạy FastAPI.
+- Nếu tài khoản không hiện tùy chọn ZeroGPU miễn phí hoặc yêu cầu thanh toán, dừng lại; không chọn phần cứng trả phí.
 - OpenPronounce tải hai model Wav2Vec2, tổng dung lượng khoảng 2,4 GB, ở lần khởi tạo đầu tiên.
 - ZeroGPU có hạn mức GPU miễn phí theo tài khoản và có thể phải chờ hàng đợi.
 - Chỉ tiếng Anh được hiệu chuẩn. Điểm số là ước lượng hỗ trợ học tập, không phải đánh giá tuyệt đối.
@@ -38,7 +39,11 @@ Không chọn CPU Basic/Docker trả phí và không bật phần cứng tính p
 
 ## Khóa phiên bản và giấy phép
 
-Space này dùng `openpronounce==0.4.0` theo giấy phép MIT. Bản này trả điểm tổng câu và danh sách lỗi/IPA theo từ, không có điểm số đã hiệu chuẩn riêng cho từng từ. Không tự nâng lên 1.0.0: bản phát hành ngày 18/11/2026 chuyển sang AGPL-3.0 và API Python đã đổi; cần rà soát giấy phép và cập nhật adapter trước khi nâng cấp.
+Space này dùng `openpronounce==0.4.0` theo giấy phép MIT. Bản này trả điểm tổng câu và danh sách lỗi/IPA theo từ, không có điểm số đã hiệu chuẩn riêng cho từng từ. Upstream 1.0.0 (18/11/2026) và 1.1.0 (19/11/2026) dùng AGPL-3.0 và API `assess()`; 1.1.0 thêm tùy chọn phone model Wav2Vec2-base chưng cất. Chưa nâng cấp trước khi rà soát AGPL và kiểm thử API mới.
+
+## Kết nối với website
+
+Space này là demo Gradio độc lập. Nút chấm AI trên website gọi FastAPI `/api/v1/pronunciation/analyze`; URL Space Gradio không tương thích trực tiếp. Chưa có proxy kết nối hai dịch vụ, vì vậy không nhập URL Space này vào website như backend.
 
 ## Công nghệ
 

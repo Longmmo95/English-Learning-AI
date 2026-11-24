@@ -85,5 +85,12 @@
     document.querySelector("#subheading").textContent = "Học ít từ một lần, nhớ lâu hơn qua luyện tập chủ động.";
     render();
   }
+  window.addEventListener("ela-progress-imported", () => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(storageKey) || "[]");
+      known = new Set(Array.isArray(saved) ? saved.filter(item => typeof item === "string") : []);
+    } catch { known = new Set(); }
+    if (nav && nav.classList.contains("active")) render();
+  });
   if (nav) nav.onclick = open;
 })();

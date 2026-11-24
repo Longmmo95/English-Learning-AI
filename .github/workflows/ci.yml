@@ -65,6 +65,8 @@ jobs:
           assert 'function bindProgressBackup()' in app
           assert 'Sao lưu tiến độ' in app and 'english-learning-ai-progress' in app
           assert 'FileReader' in app and 'Gộp tiến độ từ bản sao lưu' in app
+          assert 'window.dispatchEvent(new Event("ela-progress-imported"))' in app
+          assert 'ela-progress-imported' in cards
           assert 'cả sáu chủ đề' not in app
           assert 'if (reviewOnly) { if (index >= deck().length) index = 0; }' in cards
           assert 'data-lesson-id="daily-routine"' in html
