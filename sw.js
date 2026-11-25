@@ -1,4 +1,4 @@
-const CACHE_NAME = "english-learning-ai-shell-v1";
+const CACHE_NAME = "english-learning-ai-shell-v2";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -16,13 +16,14 @@ self.addEventListener("install", event => {
 });
 
 self.addEventListener("activate", event => {
-  event.waitUntil(
-    caches.keys().then(keys => Promise.all(
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(
       keys.filter(key => key.startsWith("english-learning-ai-shell-") && key !== CACHE_NAME)
         .map(key => caches.delete(key))
-    ))
-  );
-  self.clients.claim();
+    );
+    await self.clients.claim();
+  })());
 });
 
 self.addEventListener("fetch", event => {
@@ -30,26 +31,31 @@ self.addEventListener("fetch", event => {
   const url = new URL(request.url);
   if (request.method !== "GET" || url.origin !== self.location.origin || url.pathname.includes("/api/")) return;
 
-  if (request.mode === "navigate") {
-    event.respondWith(
-      fetch(request).then(response => {
-        if (response.ok) {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put("./index.html", copy));
-        }
-        return response;
-      }).catch(() => caches.match("./index.html"))
-    );
-    return;
-  }
+  event.respondWith((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    const cacheKey = request.mode === "navigate"
+      ? new URL("./index.html", self.registration.scope)
+      : request;
 
-  event.respondWith(
-    caches.match(request).then(cached => cached || fetch(request).then(response => {
-      if (response.ok) {
-        const copy = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
+    try {
+      // Revalidate the browser HTTP cache too, so a deployed asset is not hidden
+      // behind an older service-worker or HTTP-cache entry.
+      const response = await fetch(request, { cache: "no-cache" });
+      if (response.ok && response.type !== "opaque") {
+        await cache.put(cacheKey, response.clone());
+      }
+
+      // Prefer a recent cached copy during a temporary server error, but do not
+      // mask genuine 404 responses with stale content.
+      if (response.status >= 500) {
+        const fallback = await cache.match(cacheKey);
+        return fallback || response;
       }
       return response;
-    }))
-  );
+    } catch (error) {
+      const fallback = await cache.match(cacheKey);
+      if (fallback) return fallback;
+      throw error;
+    }
+  })());
 });

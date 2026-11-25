@@ -23,6 +23,7 @@ Website học tiếng Anh độc lập cho người Việt mới bắt đầu (A
 - [x] Luyện nói bằng nhận diện giọng nói có sẵn của trình duyệt; đối chiếu văn bản theo từng từ.
 - [x] Bài ôn tập từ vựng; tiến độ bài học, thời gian học và chuỗi ngày học được lưu cục bộ trên thiết bị.
 - [x] Sao lưu tiến độ bằng tệp JSON và gộp tiến độ từ thiết bị khác; không cần tài khoản hoặc dịch vụ đồng bộ đám mây.
+- [x] Service worker ưu tiên tải HTML/CSS/JavaScript mới từ mạng và cập nhật cache; khi mất mạng hoặc máy chủ tạm lỗi, dùng bản cache gần nhất. API không được đưa vào cache.
 - [x] Mỗi bài học có một mục ngữ pháp A1, ví dụ và câu hỏi trắc nghiệm tương tác; API trả cùng dữ liệu ngữ pháp.
 - [x] API FastAPI cho danh sách/chi tiết bài học và kiểm thử tự động.
 - [x] Adapter API tùy chọn cho OpenPronounce: nhận tệp ghi âm, trả phân tích âm vị khi engine được cài.

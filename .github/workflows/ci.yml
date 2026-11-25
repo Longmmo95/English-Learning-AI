@@ -32,6 +32,7 @@ jobs:
         run: |
           node --check app.js
           node --check flashcards.js
+          node --test tests/service-worker.test.cjs
       - name: Check frontend integration
         run: |
           python - <<'PY'
@@ -45,6 +46,10 @@ jobs:
           assert 'serviceWorker.register("./sw.js")' in app
           sw = Path("sw.js").read_text(encoding="utf-8")
           assert "CACHE_NAME" in sw and 'url.pathname.includes("/api/")' in sw
+          assert 'english-learning-ai-shell-v2' in sw
+          assert 'fetch(request, { cache: "no-cache" })' in sw
+          assert 'await cache.match(cacheKey)' in sw
+          assert 'await cache.put(cacheKey, response.clone())' in sw
           assert 'flashcards.js' in html and 'flashcards.css' in html
           assert 'flashcards:[' in app
           assert 'daily-routine' in app
