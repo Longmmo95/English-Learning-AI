@@ -78,7 +78,8 @@ def analyze_recording(audio_bytes: bytes, filename: str, expected_text: str) -> 
         raise ValueError("Câu luyện tập quá dài (tối đa 300 ký tự).")
     suffix = Path(filename or "").suffix.lower()
     if suffix not in ALLOWED_SUFFIXES:
-        suffix = ".webm"
+        allowed = ", ".join(sorted(ALLOWED_SUFFIXES))
+        raise ValueError(f"Định dạng âm thanh không được hỗ trợ. Hãy dùng: {allowed}.")
     try:
         from openpronounce import load_audio, compare_audio_with_text
     except ImportError as exc:
