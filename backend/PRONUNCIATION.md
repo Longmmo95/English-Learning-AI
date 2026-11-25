@@ -38,7 +38,7 @@ Gradio Space trong `huggingface-space/` là bản demo độc lập, không ph�
 
 ## Kết nối giao diện
 
-Trong trang Luyện nói, nhập URL HTTPS của backend và lưu. Sau đó ghi âm câu mẫu rồi gửi lên API. Trình duyệt yêu cầu HTTPS để dùng micro. Giới hạn tải lên 12 MB và tối đa 30 giây mỗi bản ghi.
+Trong trang Luyện nói, nhập URL HTTPS của backend và lưu. Sau đó ghi âm câu mẫu rồi gửi lên API. Trình duyệt yêu cầu HTTPS để dùng micro. API nhận `.wav`, `.mp3`, `.m4a`, `.webm`, `.ogg` và `.flac`; định dạng khác bị từ chối. Giới hạn tải lên 12 MB và tối đa 30 giây mỗi bản ghi.
 
 ## Riêng tư và chi phí
 
