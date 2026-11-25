@@ -249,6 +249,16 @@ def test_pronunciation_upload_rejects_payload_over_12mb(monkeypatch):
     )
     assert response.status_code == 413
 
+def test_pronunciation_upload_rejects_unsupported_audio_extension():
+    response = client.post(
+        "/api/v1/pronunciation/analyze",
+        files={"file": ("voice.txt", b"fake-audio", "text/plain")},
+        data={"expected_text": "Hello"},
+    )
+    assert response.status_code == 422
+    assert "Định dạng âm thanh không được hỗ trợ" in response.json()["detail"]
+
+
 def test_expanded_a1_curriculum_has_114_words_and_60_phrases():
     payload = client.get("/api/v1/lessons").json()
     assert sum(len(item["vocabulary"]) for item in payload["items"]) == 114
