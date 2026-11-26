@@ -78,6 +78,7 @@ jobs:
           assert "const grammarLessons =" in app
           assert "data-grammar-option" in app
           assert "Điểm tổng câu (tham khảo)" in app
+          assert "chưa xác minh model weights hoặc suy luận thật" in app
           assert "Độ tin cậy phát hiện lỗi" in app
           dockerfile = Path("backend/Dockerfile.pronunciation").read_text(encoding="utf-8")
           assert "backend/requirements-pronunciation.txt" in dockerfile

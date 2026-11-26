@@ -264,7 +264,11 @@ function speaking(){
    status.textContent="Đã lưu địa chỉ. Đang kiểm tra trạng thái engine…";
    const response=await fetch(apiBase()+"/api/v1/pronunciation/status");
    const state=await response.json();
-   status.textContent=state.available?"Đã kết nối "+(state.engine||"engine")+"; model weights sẽ tải khi phân tích lần đầu.":"Đã tới backend nhưng engine chưa được cài: "+state.message;
+   if(state.package_installed){
+    status.textContent=(state.engine||"Engine")+" đã được cài, nhưng trạng thái này chưa xác minh model weights hoặc suy luận thật. "+(state.message||"");
+   }else{
+    status.textContent="Đã tới backend nhưng engine chưa được cài: "+(state.message||"");
+   }
   }catch(error){status.textContent="Không thể kết nối backend: "+error.message+". Kiểm tra URL và cấu hình CORS."}
  };
  recordButton.onclick=async()=>{

@@ -50,6 +50,14 @@ Bản ghi âm được gửi đến backend do bạn tự quản lý; endpoint x
 OpenPronounce công bố giới hạn nhận diện và khả năng báo nhầm; không nên xem điểm số là kết luận tuyệt đối. Chỉ chấm câu tiếng Anh ngắn (tối đa 30 giây), thu âm rõ, nói tự nhiên, không có tiếng ồn nền lớn.
 
 
+## Phương án chấm điểm từng từ đang đánh giá (chưa tích hợp)
+
+Pronunciada 1.1.0 là ứng viên phù hợp hơn cho yêu cầu chấm riêng từng từ: API upstream trả `result.words[].prob` và `word.phones[].prob` (xác suất 0–1 đã hiệu chuẩn), kèm thời gian bắt đầu/kết thúc; hỗ trợ tiếng Anh và chạy CPU qua ONNX Runtime. Chế độ `precision="int8"` dùng model nhỏ khoảng 67–71 MB, tải ở lần chạy đầu.
+
+Rà soát giấy phép upstream: mã nguồn Apache-2.0; model ZIPA tải riêng CC BY 4.0 (cần ghi công); từ điển tiếng Anh CMUdict theo BSD-2-Clause-style. Gói phân phối còn chứa lexicon một số ngôn ngữ khác theo CC BY-SA 4.0, nên không được mô tả toàn bộ package là Apache-2.0 thuần; cần giữ NOTICE và tuân thủ điều kiện khi phân phối.
+
+Chưa thêm vào requirements hoặc bật trên giao diện: môi trường làm việc hiện không truy cập được PyPI/Hugging Face do lỗi phân giải DNS, nên chưa thể tải model và chạy suy luận thật. Trước khi thay OpenPronounce 0.4.0 cần có smoke test suy luận thật bằng audio mẫu có giấy phép phù hợp, kiểm tra audio người học Việt Nam, xử lý cảnh báo chất lượng/độ tin cậy và hoàn thiện thông báo giấy phép. Cho đến khi đạt các bước đó, API hiện tại vẫn không cung cấp điểm số riêng từng từ.
+
 ## Chạy bằng Docker
 
 Từ thư mục gốc repository:
