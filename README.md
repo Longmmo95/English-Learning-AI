@@ -26,7 +26,7 @@ Website học tiếng Anh độc lập cho người Việt mới bắt đầu (A
 - [x] Service worker ưu tiên tải HTML/CSS/JavaScript mới từ mạng và cập nhật cache; khi mất mạng hoặc máy chủ tạm lỗi, dùng bản cache gần nhất. API không được đưa vào cache.
 - [x] Mỗi bài học có một mục ngữ pháp A1, ví dụ và câu hỏi trắc nghiệm tương tác; API trả cùng dữ liệu ngữ pháp.
 - [x] API FastAPI cho danh sách/chi tiết bài học và kiểm thử tự động.
-- [x] Adapter API tùy chọn cho OpenPronounce: nhận tệp ghi âm, trả phân tích âm vị khi engine được cài.
+- [x] Adapter API tùy chọn cho OpenPronounce: nhận tệp ghi âm, trả điểm tổng câu và phản hồi lỗi theo từ/âm vị khi engine được cài; API status chỉ xác nhận package hiện diện, không xác nhận weights hoặc suy luận thật đã sẵn sàng.
 - [x] Giới hạn 10 yêu cầu phân tích/phút/IP trên mỗi tiến trình backend; từ chối quá giới hạn bằng HTTP 429.
 - [x] Docker chạy bằng tài khoản không phải root, có health check và được build/smoke-test trong CI.
 - [ ] Cài model weights và triển khai backend HTTPS riêng để bật chấm âm thanh thực tế.

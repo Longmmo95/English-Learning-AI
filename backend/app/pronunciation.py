@@ -36,12 +36,22 @@ def engine_status() -> dict:
     except (ImportError, ValueError):
         installed = False
     return {
+        # This flag means the Python package is importable, not that weights or
+        # an actual inference run have been verified.
         "available": installed,
+        "package_installed": installed,
         "engine": "OpenPronounce" if installed else None,
-        "granularity": "phoneme_and_word" if installed else "not_available",
-        "model_weights": "download_on_first_analysis" if installed else "not_installed",
+        "inference_verified": False,
+        "score_granularity": "sentence" if installed else "not_available",
+        "feedback_granularity": "word_and_phoneme" if installed else "not_available",
+        "word_level_scores": False,
+        "model_weights": (
+            "download_on_first_analysis_unverified" if installed else "not_installed"
+        ),
         "message": (
-            "Engine package installed. Model weights are downloaded on first analysis."
+            "OpenPronounce package is installed, but this status check does not verify model "
+            "weights or run inference. The engine returns a sentence-level score and word/phoneme "
+            "feedback; it does not return calibrated per-word scores."
             if installed
             else "Optional engine is not installed. Install backend/requirements-pronunciation.txt "
                  "and ffmpeg + espeak-ng to enable real audio analysis."

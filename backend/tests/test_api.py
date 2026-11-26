@@ -67,18 +67,31 @@ def test_unknown_lesson():
 
 def test_pronunciation_status_reports_engine_honestly():
     result = client.get("/api/v1/pronunciation/status").json()
-    assert "available" in result
-    assert result["granularity"] in {"phoneme_and_word", "not_available"}
+    assert result["available"] == result["package_installed"]
+    assert result["score_granularity"] in {"sentence", "not_available"}
+    assert result["feedback_granularity"] in {"word_and_phoneme", "not_available"}
+    assert result["word_level_scores"] is False
+    assert result["inference_verified"] is False
     assert result["engine"] in {"OpenPronounce", None}
 
 
 
-def test_pronunciation_status_reports_optional_engine_state():
-    result = client.get("/api/v1/pronunciation/status")
-    assert result.status_code == 200
-    payload = result.json()
-    assert "available" in payload
-    assert payload["granularity"] in {"phoneme_and_word", "not_available"}
+def test_pronunciation_status_does_not_claim_word_scores_when_package_is_installed(monkeypatch):
+    from app import pronunciation
+
+    monkeypatch.setattr(
+        pronunciation.importlib.util,
+        "find_spec",
+        lambda name: object() if name == "openpronounce" else None,
+    )
+    payload = pronunciation.engine_status()
+    assert payload["package_installed"] is True
+    assert payload["available"] is True
+    assert payload["inference_verified"] is False
+    assert payload["score_granularity"] == "sentence"
+    assert payload["feedback_granularity"] == "word_and_phoneme"
+    assert payload["word_level_scores"] is False
+    assert payload["model_weights"] == "download_on_first_analysis_unverified"
 
 
 def test_pronunciation_upload_returns_service_unavailable_without_engine(monkeypatch):
