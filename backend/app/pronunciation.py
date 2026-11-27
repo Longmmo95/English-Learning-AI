@@ -4,6 +4,7 @@ import importlib.util
 import math
 import numbers
 import os
+import subprocess
 import tempfile
 from pathlib import Path
 
@@ -28,6 +29,43 @@ ALLOWED_SUFFIXES = {".webm", ".wav", ".ogg", ".mp3", ".m4a", ".flac"}
 
 class PronunciationEngineUnavailable(RuntimeError):
     pass
+
+
+def probe_audio_duration(audio_path: str | Path) -> float:
+    """Read container metadata before decoding so long files are rejected early."""
+    command = [
+        "ffprobe",
+        "-v", "error",
+        "-show_entries", "format=duration",
+        "-of", "default=noprint_wrappers=1:nokey=1",
+        str(audio_path),
+    ]
+    try:
+        completed = subprocess.run(
+            command,
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+    except FileNotFoundError as exc:
+        raise PronunciationEngineUnavailable(
+            "Không tìm thấy ffprobe. Hãy cài ffmpeg trên máy chủ trước khi bật chấm phát âm."
+        ) from exc
+    except subprocess.TimeoutExpired as exc:
+        raise ValueError("Không thể xác định thời lượng bản ghi trong thời gian cho phép.") from exc
+    except subprocess.CalledProcessError as exc:
+        raise ValueError("Tệp âm thanh không hợp lệ hoặc không đọc được thời lượng.") from exc
+
+    try:
+        duration = float(completed.stdout.strip())
+    except (TypeError, ValueError) as exc:
+        raise ValueError("Không xác định được thời lượng bản ghi âm.") from exc
+    if not math.isfinite(duration) or duration <= 0:
+        raise ValueError("Thời lượng bản ghi âm không hợp lệ.")
+    if duration > MAX_AUDIO_SECONDS:
+        raise ValueError(f"Bản ghi âm quá dài (tối đa {MAX_AUDIO_SECONDS} giây).")
+    return duration
 
 
 def engine_status() -> dict:
@@ -101,6 +139,8 @@ def analyze_recording(audio_bytes: bytes, filename: str, expected_text: str) -> 
         with tempfile.NamedTemporaryFile(prefix="ela-pronunciation-", suffix=suffix, delete=False) as audio_file:
             audio_file.write(audio_bytes)
             temp_path = audio_file.name
+        # Probe the container before decoding to avoid loading oversized audio into RAM.
+        probe_audio_duration(temp_path)
         waveform = load_audio(temp_path)
         validate_audio_duration(waveform)
         result = compare_audio_with_text(waveform, expected_text, lang="en")

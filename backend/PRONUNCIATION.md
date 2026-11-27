@@ -10,7 +10,7 @@ GitHub Pages chỉ chạy giao diện tĩnh. Máy chấm âm thanh phải chạy
 - GET `/api/v1/pronunciation/status` chỉ xác nhận package Python có cài hay không. `available=true` không có nghĩa model weights đã tải hoặc suy luận đã được kiểm chứng; xem `inference_verified=false`. API khai báo rõ `score_granularity=sentence`, `feedback_granularity=word_and_phoneme` và `word_level_scores=false`.
 - Tiếng Anh là ngôn ngữ đã được hiệu chỉnh theo dữ liệu đánh giá. Đây là ước lượng hỗ trợ học tập, không phải chứng nhận năng lực.
 - Tài liệu upstream hiện mô tả hai checkpoint Wav2Vec2 khoảng 1,2 GB mỗi checkpoint; chế độ `--fast` dùng một checkpoint. Bản 1.1.0 có thêm tùy chọn phone model chưng cất, nhưng chưa được kiểm tra kích thước/tài nguyên thực tế trong dự án này. Máy chủ cần dung lượng đĩa, RAM và CPU phù hợp; lần đầu có thể chờ lâu.
-- Cần cài ffmpeg và espeak-ng. Không chạy mô hình trong GitHub Pages hoặc CI thông thường.
+- Cần cài ffmpeg (bao gồm `ffprobe`) và espeak-ng. API dùng `ffprobe` với timeout 5 giây để kiểm tra metadata thời lượng trước khi giải mã, từ chối tệp dài hơn 30 giây; sau đó vẫn kiểm tra lại thời lượng waveform sau giải mã. Nếu thiếu `ffprobe`, API trả trạng thái engine chưa khả dụng thay vì bỏ qua giới hạn. Không chạy mô hình trong GitHub Pages hoặc CI thông thường.
 
 ## Cài trên Ubuntu/Linux
 

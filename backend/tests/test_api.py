@@ -1,3 +1,6 @@
+import sys
+from types import ModuleType, SimpleNamespace
+
 import pytest
 
 from fastapi.testclient import TestClient
@@ -278,3 +281,74 @@ def test_expanded_a1_curriculum_has_114_words_and_60_phrases():
     assert sum(len(item["phrases"]) for item in payload["items"]) == 60
     assert len({word["word"].lower() for item in payload["items"] for word in item["vocabulary"]}) == 114
 
+
+
+
+def test_probe_audio_duration_accepts_short_file_and_uses_timeout(monkeypatch, tmp_path):
+    from app import pronunciation
+
+    calls = {}
+
+    def fake_run(command, **kwargs):
+        calls["command"] = command
+        calls["kwargs"] = kwargs
+        return SimpleNamespace(stdout="29.75\n")
+
+    monkeypatch.setattr(pronunciation.subprocess, "run", fake_run)
+    duration = pronunciation.probe_audio_duration(tmp_path / "voice.webm")
+
+    assert duration == pytest.approx(29.75)
+    assert calls["command"][0] == "ffprobe"
+    assert calls["kwargs"]["check"] is True
+    assert calls["kwargs"]["timeout"] == 5
+
+
+def test_probe_audio_duration_rejects_long_recording_before_decode(monkeypatch, tmp_path):
+    from app import pronunciation
+
+    monkeypatch.setattr(
+        pronunciation.subprocess,
+        "run",
+        lambda *args, **kwargs: SimpleNamespace(stdout="30.01\n"),
+    )
+    with pytest.raises(ValueError, match="30 giây"):
+        pronunciation.probe_audio_duration(tmp_path / "long.webm")
+
+
+def test_probe_audio_duration_rejects_unknown_metadata(monkeypatch, tmp_path):
+    from app import pronunciation
+
+    monkeypatch.setattr(
+        pronunciation.subprocess,
+        "run",
+        lambda *args, **kwargs: SimpleNamespace(stdout="N/A\n"),
+    )
+    with pytest.raises(ValueError, match="Không xác định"):
+        pronunciation.probe_audio_duration(tmp_path / "unknown.webm")
+
+
+def test_probe_audio_duration_reports_missing_ffprobe(monkeypatch, tmp_path):
+    from app import pronunciation
+
+    def missing(*args, **kwargs):
+        raise FileNotFoundError("ffprobe")
+
+    monkeypatch.setattr(pronunciation.subprocess, "run", missing)
+    with pytest.raises(pronunciation.PronunciationEngineUnavailable, match="ffprobe"):
+        pronunciation.probe_audio_duration(tmp_path / "voice.webm")
+
+
+def test_analyze_recording_checks_container_duration_before_decoding(monkeypatch):
+    from app import pronunciation
+
+    module = ModuleType("openpronounce")
+    module.load_audio = lambda path: (_ for _ in ()).throw(AssertionError("Decoder must not run"))
+    module.compare_audio_with_text = lambda *args, **kwargs: {}
+    monkeypatch.setitem(sys.modules, "openpronounce", module)
+
+    def reject_long_file(path):
+        raise ValueError("Bản ghi âm quá dài (tối đa 30 giây).")
+
+    monkeypatch.setattr(pronunciation, "probe_audio_duration", reject_long_file)
+    with pytest.raises(ValueError, match="30 giây"):
+        pronunciation.analyze_recording(b"audio", "voice.wav", "Hello")
