@@ -20,7 +20,7 @@ Website học tiếng Anh độc lập cho người Việt mới bắt đầu (A
 - [x] Từ vựng, phiên âm IPA, mẫu câu song ngữ và đọc mẫu bằng Web Speech API.
 - [x] Luyện nghe hiểu A1: nghe câu bằng giọng đọc của trình duyệt, chọn nghĩa tiếng Việt, xem câu sai và luyện lại riêng các câu sai; không nhầm với chấm phát âm.
 - [x] Thẻ ghi nhớ: lật thẻ, lọc từ chưa nhớ, xáo trộn, đặt lại tiến độ và lưu cục bộ.
-- [x] Luyện nói bằng nhận diện giọng nói có sẵn của trình duyệt; đối chiếu văn bản theo từng từ.
+- [x] Luyện nói bằng nhận diện giọng nói có sẵn của trình duyệt; đối chiếu văn bản theo từng từ. Khi có backend riêng, nút ghi âm dùng Pronunciada để trả xác suất tổng câu/từng từ/từng âm vị.
 - [x] Bài ôn tập từ vựng; tiến độ bài học, thời gian học và chuỗi ngày học được lưu cục bộ trên thiết bị.
 - [x] Sao lưu tiến độ bằng tệp JSON và gộp tiến độ từ thiết bị khác; không cần tài khoản hoặc dịch vụ đồng bộ đám mây.
 - [x] Service worker ưu tiên tải HTML/CSS/JavaScript mới từ mạng và cập nhật cache; khi mất mạng hoặc máy chủ tạm lỗi, dùng bản cache gần nhất. API không được đưa vào cache.
@@ -35,7 +35,7 @@ Website học tiếng Anh độc lập cho người Việt mới bắt đầu (A
 - [ ] Triển khai backend HTTPS riêng có cài Pronunciada và model weights để website công khai có thể gửi âm thanh chấm điểm.
 
 ## Giới hạn cần biết
-- Luyện nói trên trình duyệt vẫn là chế độ dự phòng. API chấm âm thanh dùng OpenPronounce khi cài optional engine; cần backend riêng, ffmpeg/espeak-ng và khoảng 2,4 GB model weights. Engine 0.4.0 trả điểm tổng câu và danh sách lỗi/IPA theo từ, không trả điểm số đã hiệu chuẩn riêng cho từng từ; confidence chỉ là độ tin cậy phát hiện lỗi.
+- Luyện nói trên trình duyệt vẫn là chế độ dự phòng, không phải chấm phát âm. API có hai engine tùy chọn: OpenPronounce 0.4.0 (điểm tổng câu) và Pronunciada 1.1.1 (xác suất câu/từ/âm vị); cần backend riêng và ffmpeg. Pronunciada dùng model INT8 khoảng 71 MB, tải ở lần inference đầu. Các xác suất là ước lượng, cần kiểm định thêm với người học Việt Nam.
 - API FastAPI chưa được triển khai lên máy chủ công khai; GitHub Pages hiện chỉ xuất bản frontend tĩnh. Có thể chạy backend miễn phí trên máy cá nhân để thử nghiệm; không giả định có dịch vụ public luôn bật miễn phí.
 - Giữ `openpronounce==0.4.0` (MIT) có chủ đích. PyPI phát hành 1.0.0 ngày 18/11/2026 với giấy phép AGPL-3.0 và API Python `assess()` mới; không tự nâng cấp trước khi rà soát giấy phép và chuyển đổi/kiểm thử adapter.
 - Pronunciada 1.1.1 đã được nối vào API riêng, dùng `Scorer("en", precision="int8")` trên CPU. Model khoảng 71 MB được tải ở lần phân tích đầu tiên. Endpoint status chỉ báo package hiện diện; inference chỉ được xác nhận khi phân tích âm thanh thật thành công. CI smoke test dùng giọng eSpeak tổng hợp, không chứng minh độ chính xác trên người học Việt Nam.
@@ -46,7 +46,7 @@ Website học tiếng Anh độc lập cho người Việt mới bắt đầu (A
 - Dữ liệu tiến độ đang lưu trong trình duyệt hiện tại, chưa có tài khoản hoặc đồng bộ đa thiết bị.
 - Cần HTTPS và quyền micro để dùng chức năng nhận diện giọng nói; hỗ trợ tùy trình duyệt.
 
-## Chạy backend cục bộ
+## Giấy phép và ghi công\n\nXem [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) và [backend/PRONUNCIATION.md](backend/PRONUNCIATION.md) trước khi đóng gói/phân phối backend.\n\n## Chạy backend cục bộ
 ```bash
 cd backend
 pip install -r requirements.txt
