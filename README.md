@@ -26,18 +26,20 @@ Website học tiếng Anh độc lập cho người Việt mới bắt đầu (A
 - [x] Service worker ưu tiên tải HTML/CSS/JavaScript mới từ mạng và cập nhật cache; khi mất mạng hoặc máy chủ tạm lỗi, dùng bản cache gần nhất. API không được đưa vào cache.
 - [x] Mỗi bài học có một mục ngữ pháp A1, ví dụ và câu hỏi trắc nghiệm tương tác; API trả cùng dữ liệu ngữ pháp.
 - [x] API FastAPI cho danh sách/chi tiết bài học và kiểm thử tự động.
-- [x] Adapter API tùy chọn cho OpenPronounce: nhận tệp ghi âm, trả điểm tổng câu và phản hồi lỗi theo từ/âm vị khi engine được cài; API status chỉ xác nhận package hiện diện, không xác nhận weights hoặc suy luận thật đã sẵn sàng.
+- [x] Adapter API tùy chọn cho OpenPronounce 0.4.0: giữ endpoint tương thích, trả điểm tổng câu và phản hồi lỗi theo từ/âm vị.
+- [x] Adapter API riêng cho Pronunciada 1.1.1: endpoint `/api/v1/pronunciation/analyze-precise` trả xác suất tổng câu, từng từ và từng âm vị; chuyển âm thanh về WAV mono 16 kHz, giới hạn file/thời lượng và không tạo điểm giả khi inference lỗi.
+- [x] CI có smoke test inference CPU INT8 thật với âm thanh eSpeak tổng hợp. Test xác nhận mô hình tải và trả điểm từng từ, không thay thế kiểm định với giọng người học Việt Nam.
 - [x] Giới hạn 10 yêu cầu phân tích/phút/IP trên mỗi tiến trình backend; từ chối quá giới hạn bằng HTTP 429.
 - [x] Kiểm tra thời lượng media bằng `ffprobe` trước khi giải mã (timeout 5 giây, tối đa 30 giây) và kiểm tra lại waveform sau giải mã để hạn chế tệp nén dài gây tiêu thụ RAM/CPU.
 - [x] Docker chạy bằng tài khoản không phải root, có health check và được build/smoke-test trong CI.
-- [ ] Cài model weights và triển khai backend HTTPS riêng để bật chấm âm thanh thực tế.
+- [ ] Triển khai backend HTTPS riêng có cài Pronunciada và model weights để website công khai có thể gửi âm thanh chấm điểm.
 
 ## Giới hạn cần biết
 - Luyện nói trên trình duyệt vẫn là chế độ dự phòng. API chấm âm thanh dùng OpenPronounce khi cài optional engine; cần backend riêng, ffmpeg/espeak-ng và khoảng 2,4 GB model weights. Engine 0.4.0 trả điểm tổng câu và danh sách lỗi/IPA theo từ, không trả điểm số đã hiệu chuẩn riêng cho từng từ; confidence chỉ là độ tin cậy phát hiện lỗi.
-- API FastAPI chưa được triển khai lên máy chủ công khai; GitHub Pages hiện chỉ xuất bản frontend tĩnh.
+- API FastAPI chưa được triển khai lên máy chủ công khai; GitHub Pages hiện chỉ xuất bản frontend tĩnh. Có thể chạy backend miễn phí trên máy cá nhân để thử nghiệm; không giả định có dịch vụ public luôn bật miễn phí.
 - Giữ `openpronounce==0.4.0` (MIT) có chủ đích. PyPI phát hành 1.0.0 ngày 18/11/2026 với giấy phép AGPL-3.0 và API Python `assess()` mới; không tự nâng cấp trước khi rà soát giấy phép và chuyển đổi/kiểm thử adapter.
-- Phương án đang đánh giá cho điểm từng từ: Pronunciada 1.1.1 (PyPI phát hành 26/11/2026) có xác suất hiệu chuẩn riêng cho từng từ/âm vị và mốc thời gian; Scorer("en", precision="int8") dùng model CPU khoảng 71 MB. Chưa tích hợp vào API/UI. CI có smoke test suy luận thật bằng giọng eSpeak tổng hợp; test chỉ xác minh model tải được và trả xác suất từng từ, không chứng minh độ chính xác trên người học Việt Nam.
-- Giấy phép Pronunciada: PyPI công bố SPDX expression Apache-2.0 AND CC-BY-SA-4.0 AND BSD-2-Clause AND MIT; model ZIPA tải riêng theo CC BY 4.0. Phải giữ NOTICE/ghi công và tuân thủ giấy phép dữ liệu từ điển trước khi phân phối.
+- Pronunciada 1.1.1 đã được nối vào API riêng, dùng `Scorer("en", precision="int8")` trên CPU. Model khoảng 71 MB được tải ở lần phân tích đầu tiên. Endpoint status chỉ báo package hiện diện; inference chỉ được xác nhận khi phân tích âm thanh thật thành công. CI smoke test dùng giọng eSpeak tổng hợp, không chứng minh độ chính xác trên người học Việt Nam.
+- Giấy phép Pronunciada: mã nguồn Apache-2.0; gói có dữ liệu/lexicon theo các giấy phép bổ sung (CC-BY-SA-4.0, BSD-2-Clause, MIT); model ZIPA tải riêng theo CC BY 4.0. Phải giữ NOTICE/ghi công và tuân thủ giấy phép dữ liệu từ điển trước khi phân phối.
 - Hugging Face ZeroGPU là tùy chọn Gradio; chỉ dùng nếu tài khoản cá nhân miễn phí đủ điều kiện và còn quota. Theo tài liệu Hugging Face hiện tại (18/11/2026), tài khoản cá nhân ở trạng thái tốt, đã xác minh email và có tuổi tài khoản trên 30 ngày có thể host tối đa 2 ZeroGPU Spaces; quota Free là 5 phút GPU/ngày. ZeroGPU chỉ hỗ trợ Gradio. Không nâng cấp PRO, không mua/nạp credits và không bật phần cứng trả phí; nếu hết quota hoặc không đủ điều kiện thì dừng, không phát sinh chi phí.
 - CI kiểm tra cú pháp/tích hợp frontend, API tests, cấu hình Gradio và build/smoke-test Docker. Test backend cài thêm `httpx2` trong `requirements-dev.txt` để tránh đường tương thích cũ của Starlette TestClient.
 - Rate limit trong bộ nhớ chỉ bảo vệ từng tiến trình; triển khai nhiều worker/instance cần thêm giới hạn dùng chung tại reverse proxy/API gateway. CORS không thay thế xác thực.
