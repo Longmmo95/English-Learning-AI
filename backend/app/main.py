@@ -13,6 +13,10 @@ from app.pronunciation import (
     analyze_recording,
     engine_status,
 )
+from app.pronunciada_engine import (
+    analyze_recording as analyze_pronunciada_recording,
+    engine_status as pronunciada_engine_status,
+)
 
 app = FastAPI(title="English Learning AI API", version="0.3.0")
 
@@ -26,7 +30,10 @@ _request_times_lock = Lock()
 
 @app.middleware("http")
 async def pronunciation_rate_limit(request: Request, call_next):
-    if request.method == "POST" and request.url.path == "/api/v1/pronunciation/analyze":
+    if request.method == "POST" and request.url.path in {
+        "/api/v1/pronunciation/analyze",
+        "/api/v1/pronunciation/analyze-precise",
+    }:
         client_ip = request.client.host if request.client else "unknown"
         now = monotonic()
         with _request_times_lock:
@@ -334,6 +341,35 @@ def get_lesson(lesson_id: str):
 def pronunciation_status():
     return engine_status()
 
+
+
+@app.get("/api/v1/pronunciation/precise-status")
+def pronunciation_precise_status():
+    """Report package presence only; actual inference is verified on first analysis."""
+    return pronunciada_engine_status()
+
+
+@app.post("/api/v1/pronunciation/analyze-precise")
+def pronunciation_analyze_precise(
+    file: UploadFile = File(...),
+    expected_text: str = Form(...),
+):
+    audio_bytes = file.file.read(MAX_AUDIO_BYTES + 1)
+    if len(audio_bytes) > MAX_AUDIO_BYTES:
+        raise HTTPException(status_code=413, detail="Bản ghi âm vượt quá giới hạn 12 MB.")
+    try:
+        return analyze_pronunciada_recording(
+            audio_bytes, file.filename or "recording.webm", expected_text
+        )
+    except PronunciationEngineUnavailable as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail="Không thể phân tích bản ghi âm. Hãy thử lại với câu ngắn và âm thanh rõ hơn.",
+        ) from exc
 
 @app.post("/api/v1/pronunciation/analyze")
 def pronunciation_analyze(
