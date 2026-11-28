@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - feature/interactive-flashcards
+      - feature/pronunciada-integration
   pull_request:
     branches:
       - main
