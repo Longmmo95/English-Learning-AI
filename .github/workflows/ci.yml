@@ -182,3 +182,31 @@ jobs:
           done
           echo "API did not become healthy within 90 seconds."
           exit 1
+
+  pronunciada-cpu-smoke:
+    name: Pronunciada CPU word-level inference smoke test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - name: Install eSpeak NG
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y espeak-ng
+      - name: Install pinned Pronunciada release
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "pronunciada==1.1.1"
+      - name: Generate a deterministic English audio fixture
+        run: |
+          espeak-ng -v en-us -s 145 -w "$RUNNER_TEMP/ela-pronunciada-smoke.wav" "Good morning. My name is Alex."
+      - name: Download INT8 weights and verify real CPU word-level inference
+        run: |
+          python scripts/pronunciada_smoke.py \
+            --audio "$RUNNER_TEMP/ela-pronunciada-smoke.wav" \
+            --text "Good morning. My name is Alex."

@@ -52,11 +52,25 @@ OpenPronounce công bố giới hạn nhận diện và khả năng báo nhầm;
 
 ## Phương án chấm điểm từng từ đang đánh giá (chưa tích hợp)
 
-Pronunciada 1.1.0 là ứng viên phù hợp hơn cho yêu cầu chấm riêng từng từ: API upstream trả `result.words[].prob` và `word.phones[].prob` (xác suất 0–1 đã hiệu chuẩn), kèm thời gian bắt đầu/kết thúc; hỗ trợ tiếng Anh và chạy CPU qua ONNX Runtime. Chế độ `precision="int8"` dùng model nhỏ khoảng 67–71 MB, tải ở lần chạy đầu.
+Ứng viên đang được đánh giá là **Pronunciada 1.1.1**, phát hành trên PyPI ngày 26/11/2026. Tài liệu upstream công bố API Python:
 
-Rà soát giấy phép upstream: mã nguồn Apache-2.0; model ZIPA tải riêng CC BY 4.0 (cần ghi công); từ điển tiếng Anh CMUdict theo BSD-2-Clause-style. Gói phân phối còn chứa lexicon một số ngôn ngữ khác theo CC BY-SA 4.0, nên không được mô tả toàn bộ package là Apache-2.0 thuần; cần giữ NOTICE và tuân thủ điều kiện khi phân phối.
+    from pronunciada import Scorer
+    scorer = Scorer("en", precision="int8")
+    result = scorer.score("clip.wav", "Good morning")
 
-Chưa thêm vào requirements hoặc bật trên giao diện: môi trường làm việc hiện không truy cập được PyPI/Hugging Face do lỗi phân giải DNS, nên chưa thể tải model và chạy suy luận thật. Trước khi thay OpenPronounce 0.4.0 cần có smoke test suy luận thật bằng audio mẫu có giấy phép phù hợp, kiểm tra audio người học Việt Nam, xử lý cảnh báo chất lượng/độ tin cậy và hoàn thiện thông báo giấy phép. Cho đến khi đạt các bước đó, API hiện tại vẫn không cung cấp điểm số riêng từng từ.
+result.prob là xác suất tổng câu; result.words[].prob là xác suất hiệu chuẩn cho từng từ; từng từ còn có điểm âm vị và thông tin thời gian. Chế độ INT8 dùng model khoảng 71 MB, chạy CPU không cần GPU. Package tải từ PyPI khoảng 34,5 MB; model được tải ở lần dùng đầu tiên. Nguồn: https://pypi.org/project/pronunciada/1.1.1/.
+
+### Kiểm chứng kỹ thuật trong CI
+
+Workflow có job riêng pronunciada-cpu-smoke: cài chính xác pronunciada==1.1.1, tạo một câu tiếng Anh mẫu bằng eSpeak NG, tải model INT8 và chạy suy luận CPU thật qua scripts/pronunciada_smoke.py. Job xác nhận kết quả có xác suất câu và xác suất hợp lệ cho từng từ. Không dùng điểm giả hoặc mock model trong job này.
+
+Đây chỉ là smoke test bằng giọng tổng hợp để xác minh package, model weights và đường suy luận. Nó **không** thay thế đánh giá độ chính xác trên giọng người học Việt Nam, không hiệu chuẩn ngưỡng đạt/trượt và không tự bật điểm từng từ trên website. Endpoint hiện tại vẫn dùng OpenPronounce 0.4.0, chỉ có điểm tổng câu; word_level_scores=false tiếp tục được giữ cho đến khi adapter mới được tích hợp và kiểm chứng với dữ liệu người học có quyền sử dụng.
+
+### Giấy phép và điều kiện trước khi tích hợp
+
+PyPI công bố SPDX expression của package là Apache-2.0 AND CC-BY-SA-4.0 AND BSD-2-Clause AND MIT. Model ZIPA tải riêng theo CC BY 4.0. Cần giữ NOTICE, ghi công model và kiểm tra giấy phép từng dữ liệu/từ điển trước khi phân phối. Không được mô tả toàn bộ package là Apache-2.0 thuần.
+
+Trước khi đưa vào API/UI cần: smoke test CI thành công; kiểm tra cảnh báo audio im lặng/cắt/clipping/noise; thử trên giọng người học Việt Nam với sự đồng ý và giấy phép phù hợp; đo RAM/latency CPU trên máy chủ mục tiêu; kiểm tra output alignment và timestamps; thêm attribution/NOTICE. Chưa đạt các bước này thì không trả điểm riêng từng từ cho người học.
 
 ## Chạy bằng Docker
 
