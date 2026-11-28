@@ -192,7 +192,6 @@ def analyze_recording(audio_bytes: bytes, filename: str, expected_text: str) -> 
     if suffix not in ALLOWED_SUFFIXES:
         raise ValueError("Định dạng âm thanh không được hỗ trợ.")
 
-    scorer = _get_scorer()
     with tempfile.TemporaryDirectory(prefix="ela-pronunciada-") as directory:
         source = Path(directory) / f"input{suffix}"
         normalized = Path(directory) / "normalized.wav"
@@ -215,6 +214,8 @@ def analyze_recording(audio_bytes: bytes, filename: str, expected_text: str) -> 
         if not normalized.is_file() or normalized.stat().st_size < 1000:
             raise ValueError("Bản ghi âm không có dữ liệu giọng nói hợp lệ.")
 
+        # Load model only after the upload has passed format and duration checks.
+        scorer = _get_scorer()
         # Scorer instances retain model state; serialize calls to avoid unsafe concurrent inference.
         try:
             with _inference_lock:
