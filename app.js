@@ -180,10 +180,10 @@ function speaking(){
  function renderTarget(){const p=current();target.innerHTML="<b>"+safe(p.text)+"</b><small>"+safe(p.meaning)+" · "+safe(p.lesson)+"</small>";result.classList.add("hidden")}
  function apiBase(){return (localStorage.getItem(apiKey)||"").replace(/\/+$/,"")}
  function renderAnalysis(data){
-  const rawScore=data?.score;const score=typeof rawScore==="number"&&Number.isFinite(rawScore)&&rawScore>=0&&rawScore<=100?Math.round(rawScore):null;if(score===null)throw new Error("Máy chủ không trả về điểm phát âm hợp lệ; không hiển thị điểm.");const diff=data.differences||{},errors=Array.isArray(diff.errors)?diff.errors:[];
+  const rawScore=data?.score;const score=typeof rawScore==="number"&&Number.isFinite(rawScore)&&rawScore>=0&&rawScore<=100?Math.round(rawScore):null;if(score===null)throw new Error("Máy chủ không trả về điểm phát âm hợp lệ; không hiển thị điểm.");const diff=data.differences||{},errors=Array.isArray(data.coaching)?data.coaching:Array.isArray(diff.errors)?diff.errors:[];
   const errorHtml=errors.length?errors.map(item=>{
    const confidence=typeof item.confidence==="number"&&Number.isFinite(item.confidence)&&item.confidence>=0&&item.confidence<=1?Math.round(item.confidence*100):null;
-   return '<div class="pronunciation-error"><b>'+safe(item.word||"Từ cần luyện")+'</b><small>Mong đợi: /'+safe(item.expected||"—")+'/</small><small>Nhận diện: /'+safe(item.actual||"không nhận diện được")+'/</small>'+(confidence===null?"":'<small>Độ tin cậy phát hiện lỗi: '+confidence+'%</small>')+'</div>';
+   return '<div class="pronunciation-error"><b>'+safe(item.word||"Từ cần luyện")+'</b><small>Mong đợi: /'+safe(item.expected||"—")+'/</small><small>Nhận diện: /'+safe(item.actual||item.heard||"không nhận diện được")+'/</small>'+(confidence===null?"":'<small>Độ tin cậy phát hiện lỗi: '+confidence+'%</small>')+'</div>';
   }).join(""):'<p class="word-match">Không phát hiện lỗi âm vị đáng kể trong câu này. Hãy nghe lại để tự kiểm tra.</p>';
   const wordScores=Array.isArray(data.words)?data.words.map(word=>{
    const probability=typeof word.probability==="number"&&Number.isFinite(word.probability)&&word.probability>=0&&word.probability<=1?Math.round(word.probability*100):null;
@@ -193,7 +193,7 @@ function speaking(){
   }).join(""):"";
   result.innerHTML='<div class="pronunciation-score"><span>Điểm tổng câu (tham khảo)</span><strong>'+ score+'<small>/100</small></strong></div>'+
    (wordScores?'<b>Điểm ước lượng theo từng từ:</b>'+wordScores:"")+
-   '<b>Máy nhận diện được:</b><p>'+safe(data.transcribe||"Chưa có bản phiên âm.")+'</p>'+
+   '<b>Câu đã chấm:</b><p>'+safe(data.text||current().text)+'</p>'+
    '<b>Những từ nên luyện lại:</b>'+errorHtml+
    '<p class="muted">WER: '+safe(diff.word_error_rate??"—")+' · Phoneme error rate: '+safe(diff.phoneme_error_rate??"—")+'</p>'+
    '<p class="muted">Điểm 0–100 áp dụng cho toàn câu. Độ tin cậy bên cạnh từng lỗi là độ tin cậy phát hiện lỗi của mô hình, không phải điểm số riêng của từ.</p>'+
@@ -202,7 +202,7 @@ function speaking(){
  }
  async function submitRecording(blob){
   const base=apiBase();
-  if(!base){status.textContent="Bạn chưa nhập địa chỉ backend. Hãy nhập URL HTTPS của máy chủ OpenPronounce rồi lưu.";return}
+  if(!base){status.textContent="Bạn chưa nhập địa chỉ backend. Hãy nhập URL HTTPS của máy chủ Pronunciada rồi lưu.";return}
   result.classList.add("hidden");result.replaceChildren();const form=new FormData();const mime=(blob.type||"").toLowerCase();const extension=mime.includes("ogg")?"ogg":mime.includes("wav")?"wav":mime.includes("mp4")?"m4a":"webm";form.append("file",blob,"practice."+extension);form.append("expected_text",current().text);
   status.textContent="Đang tải bản ghi và chấm từng từ/âm vị. Lần đầu máy chủ có thể cần tải mô hình INT8 nên sẽ mất thời gian.";
   recordButton.disabled=true;
@@ -279,7 +279,7 @@ function speaking(){
   }catch(error){status.textContent="Không thể kết nối backend: "+error.message+". Kiểm tra URL và cấu hình CORS."}
  };
  recordButton.onclick=async()=>{
-  if(recording){clearTimeout(recordingTimeout);recordingTimeout=null;recorder.stop();recording=false;recordButton.textContent="🎙 Ghi âm và chấm AI";recordButton.classList.remove("recording");return}
+  if(recording){clearTimeout(recordingTimeout);recordingTimeout=null;recorder.stop();recording=false;recordButton.textContent="🎙 Ghi âm và chấm AI theo từ";recordButton.classList.remove("recording");return}
   if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){status.textContent="Trình duyệt này chưa hỗ trợ ghi âm. Hãy dùng Chrome hoặc Edge trên HTTPS.";return}
   try{
    stream=await navigator.mediaDevices.getUserMedia({audio:true});chunks=[];
