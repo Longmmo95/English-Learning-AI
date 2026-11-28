@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import importlib.util
 import math
+import numbers
 import os
 import subprocess
 import tempfile
@@ -73,8 +74,23 @@ def _get_scorer():
     return _scorer
 
 
+
+def _json_safe(value: Any) -> Any:
+    """Convert numeric scalar types from the inference library to plain JSON values."""
+    if value is None or isinstance(value, (str, bool, int)):
+        return value
+    if isinstance(value, numbers.Real):
+        number = float(value)
+        return number if math.isfinite(number) else None
+    if isinstance(value, dict):
+        return {str(key): _json_safe(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_safe(item) for item in value]
+    return str(value)
+
+
 def _probability(value: Any, label: str) -> float:
-    if isinstance(value, bool) or not isinstance(value, (int, float)):
+    if isinstance(value, bool) or not isinstance(value, numbers.Real):
         raise RuntimeError(f"Pronunciada returned an invalid {label} probability.")
     number = float(value)
     if not math.isfinite(number) or not 0.0 <= number <= 1.0:
@@ -115,7 +131,7 @@ def build_response(result: Any) -> dict:
                 "probability": round(_probability(getattr(phone, "prob", None), "phoneme"), 4),
                 "start": _optional_time(getattr(phone, "start", None), "phoneme start"),
                 "end": _optional_time(getattr(phone, "end", None), "phoneme end"),
-                "heard": getattr(phone, "heard", None),
+                "heard": _json_safe(getattr(phone, "heard", None)),
             })
         words.append({
             "text": text,
@@ -132,14 +148,14 @@ def build_response(result: Any) -> dict:
             for item in coach_method(max_items=30):
                 if isinstance(item, dict):
                     coaching.append({
-                        "kind": item.get("kind"),
-                        "word": item.get("word"),
-                        "expected": item.get("expected_ipa", item.get("expected")),
-                        "heard": item.get("heard_ipa", item.get("heard")),
-                        "confidence": item.get("confidence"),
-                        "error_probability": item.get("error_prob"),
-                        "start": item.get("start"),
-                        "end": item.get("end"),
+                        "kind": _json_safe(item.get("kind")),
+                        "word": _json_safe(item.get("word")),
+                        "expected": _json_safe(item.get("expected_ipa", item.get("expected"))),
+                        "heard": _json_safe(item.get("heard_ipa", item.get("heard"))),
+                        "confidence": _json_safe(item.get("confidence")),
+                        "error_probability": _json_safe(item.get("error_prob")),
+                        "start": _json_safe(item.get("start")),
+                        "end": _json_safe(item.get("end")),
                     })
         except Exception:
             # A coaching failure must not invalidate otherwise valid acoustic scores.
@@ -149,7 +165,7 @@ def build_response(result: Any) -> dict:
     audio_quality = None
     if isinstance(audio, dict):
         audio_quality = {
-            "issues": audio.get("issues", []),
+            "issues": _json_safe(audio.get("issues", [])),
             "retry_recommended": bool(audio.get("retry_recommended", False)),
         }
 
@@ -173,8 +189,8 @@ def build_response(result: Any) -> dict:
             round(_probability(result.completeness, "completeness"), 4)
             if getattr(result, "completeness", None) is not None else None
         ),
-        "warnings": list(getattr(result, "warnings", []) or []),
-        "timing_ms": dict(getattr(result, "timing_ms", {}) or {}),
+        "warnings": _json_safe(list(getattr(result, "warnings", []) or [])),
+        "timing_ms": _json_safe(dict(getattr(result, "timing_ms", {}) or {})),
     }
 
 
