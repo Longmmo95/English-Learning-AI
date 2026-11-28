@@ -156,6 +156,7 @@ def build_response(result: Any) -> dict:
     return {
         "schema_version": 1,
         "engine": "Pronunciada 1.1.1",
+        "text": getattr(result, "text", ""),
         "score": round(sentence_prob * 100, 1),
         "score_probability": round(sentence_prob, 4),
         "score_granularity": "sentence",
