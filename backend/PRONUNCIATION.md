@@ -80,3 +80,22 @@ Từ thư mục gốc repository:
     docker run --rm -p 8000:8000 -v english-learning-models:/models english-learning-ai-api
 
 Lệnh trên tạo một máy chủ CPU. Volume Docker giữ model weights giữa các lần chạy; image có thể lớn do PyTorch và OpenPronounce. Khi đưa lên Internet, cần HTTPS, giới hạn truy cập và giữ CORS theo mặc định chỉ cho https://longmmo95.github.io. Endpoint phân tích có giới hạn cơ bản 10 yêu cầu/phút theo IP trên mỗi tiến trình; khi chạy nhiều worker/instance, phải bổ sung rate limit dùng chung ở reverse proxy/API gateway. Không xem CORS là cơ chế xác thực. Nếu chạy giao diện ở localhost, đặt ELA_ALLOWED_ORIGINS=http://localhost:5500,http://127.0.0.1:5500 trước khi khởi động backend. Không dùng dấu * cho máy chủ công khai.
+
+
+## Engine Pronunciada 1.1.1 — chấm từng từ và âm vị
+
+API mới được tách riêng, không thay thế endpoint OpenPronounce cũ:
+
+- GET `/api/v1/pronunciation/precise-status`: chỉ kiểm tra package có cài hay không; không tải model và không khẳng định inference đã sẵn sàng.
+- POST `/api/v1/pronunciation/analyze-precise`: nhận `file` và `expected_text`, trả xác suất tổng câu, từng từ, từng âm vị, mốc thời gian và coaching khi có.
+- Engine chạy CPU INT8 bằng `pronunciada==1.1.1`; model ZIPA khoảng 71 MB được tải ở lần inference đầu tiên. Có thể cấu hình `PRONUNCIADA_THREADS` (1–4, mặc định 2).
+- Upload được kiểm tra kích thước 12 MB và thời lượng tối đa 30 giây trước khi giải mã; ffmpeg chuyển về WAV mono 16 kHz. Tệp tạm được xóa sau phân tích.
+- CI kiểm tra inference thật với âm thanh tổng hợp eSpeak. Điều này chỉ xác nhận model và API thư viện hoạt động; chưa chứng minh độ chính xác với giọng người Việt mới học.
+- Xác suất là ước lượng hiệu chuẩn của mô hình, không phải điểm thi. Nếu âm thanh quá ồn, cắt mất đầu/cuối hoặc từ ngoài từ điển, kết quả có thể sai; cần nghe lại và luyện cùng giọng mẫu.
+- Package code Apache-2.0; ZIPA model CC BY 4.0; dữ liệu/lexicon có giấy phép bổ sung. Giữ upstream NOTICE và attribution, đọc `NOTICE` và upstream `docs/LICENSING.md` trước khi phân phối image/container.
+
+Cài trên backend:
+
+    pip install -r backend/requirements-pronunciation.txt
+
+Backend phải có `ffmpeg`/ `ffprobe`. GitHub Pages không chạy Python inference. Để website gọi API, backend cần HTTPS và cấu hình CORS cho đúng origin; không mở endpoint upload công khai nếu chưa có giới hạn, giám sát và chính sách lưu/xóa dữ liệu phù hợp.
