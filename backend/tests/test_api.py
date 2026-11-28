@@ -352,3 +352,106 @@ def test_analyze_recording_checks_container_duration_before_decoding(monkeypatch
     monkeypatch.setattr(pronunciation, "probe_audio_duration", reject_long_file)
     with pytest.raises(ValueError, match="30 giây"):
         pronunciation.analyze_recording(b"audio", "voice.wav", "Hello")
+
+def test_pronunciada_status_does_not_claim_inference_is_verified(monkeypatch):
+    from app import pronunciada_engine
+
+    monkeypatch.setattr(
+        pronunciada_engine.importlib.util,
+        "find_spec",
+        lambda name: object() if name == "pronunciada" else None,
+    )
+    payload = pronunciada_engine.engine_status()
+    assert payload["package_installed"] is True
+    assert payload["available"] is True
+    assert payload["engine"] == "Pronunciada 1.1.1"
+    assert payload["inference_verified"] is False
+    assert payload["score_granularity"] == "sentence"
+    assert payload["word_level_scores"] is True
+    assert payload["phoneme_level_scores"] is True
+
+
+def test_pronunciada_response_contains_valid_sentence_word_and_phone_probabilities():
+    from types import SimpleNamespace
+    from app.pronunciada_engine import build_response
+
+    phone = SimpleNamespace(ipa="h", prob=0.91, start=0.02, end=0.08, heard=None)
+    word = SimpleNamespace(text="Hello", prob=0.87, start=0.02, end=0.55, phones=[phone])
+    result = SimpleNamespace(
+        prob=0.84,
+        words=[word],
+        coaching=lambda **kwargs: [],
+        audio={"issues": [], "retry_recommended": False},
+        fluency=0.9,
+        completeness=1.0,
+        warnings=[],
+        timing_ms={"total": 42},
+    )
+    payload = build_response(result)
+    assert payload["schema_version"] == 1
+    assert payload["score"] == 84.0
+    assert payload["word_level_scores"] is True
+    assert payload["words"][0]["text"] == "Hello"
+    assert payload["words"][0]["probability"] == 0.87
+    assert payload["words"][0]["phones"][0]["ipa"] == "h"
+    assert payload["words"][0]["phones"][0]["probability"] == 0.91
+
+
+def test_pronunciada_response_rejects_invalid_word_probability():
+    from types import SimpleNamespace
+    from app.pronunciada_engine import build_response
+
+    word = SimpleNamespace(text="Hello", prob=1.5, start=0.0, end=0.5, phones=[])
+    result = SimpleNamespace(prob=0.8, words=[word], coaching=lambda **kwargs: [])
+    with pytest.raises(RuntimeError, match="word probability"):
+        build_response(result)
+
+
+def test_precise_pronunciation_endpoint_returns_word_level_contract(monkeypatch):
+    import app.main as main_module
+
+    expected = {
+        "schema_version": 1,
+        "engine": "Pronunciada 1.1.1",
+        "score": 84.0,
+        "score_probability": 0.84,
+        "score_granularity": "sentence",
+        "word_level_scores": True,
+        "phoneme_level_scores": True,
+        "words": [{"text": "Hello", "probability": 0.87, "phones": []}],
+        "coaching": [],
+        "audio_quality": None,
+        "fluency_probability": None,
+        "completeness_probability": None,
+        "warnings": [],
+        "timing_ms": {},
+    }
+    monkeypatch.setattr(
+        main_module,
+        "analyze_pronunciada_recording",
+        lambda audio, filename, text: expected,
+    )
+    response = client.post(
+        "/api/v1/pronunciation/analyze-precise",
+        files={"file": ("voice.webm", b"fake-audio", "audio/webm")},
+        data={"expected_text": "Hello"},
+    )
+    assert response.status_code == 200
+    assert response.json() == expected
+
+
+def test_precise_pronunciation_endpoint_reports_missing_engine(monkeypatch):
+    import app.main as main_module
+    from app.pronunciation import PronunciationEngineUnavailable
+
+    def unavailable(*args, **kwargs):
+        raise PronunciationEngineUnavailable("Pronunciada missing")
+
+    monkeypatch.setattr(main_module, "analyze_pronunciada_recording", unavailable)
+    response = client.post(
+        "/api/v1/pronunciation/analyze-precise",
+        files={"file": ("voice.webm", b"fake-audio", "audio/webm")},
+        data={"expected_text": "Hello"},
+    )
+    assert response.status_code == 503
+    assert "Pronunciada missing" in response.json()["detail"]
