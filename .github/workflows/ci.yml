@@ -63,6 +63,12 @@ jobs:
           assert "window.stopSpeakingCapture" in app
           assert "if(discardRecording)" in app
           assert '/api/v1/pronunciation/analyze' in app
+          assert '/api/v1/pronunciation/analyze-precise' in app
+          assert 'wordScores' in app
+          precise = Path("backend/app/pronunciada_engine.py").read_text(encoding="utf-8")
+          assert 'Scorer("en", precision="int8"' in precise
+          assert 'TemporaryDirectory' in precise and 'ffmpeg' in precise
+          assert 'build_response' in precise
           assert 'ela-pronunciation-api-url' in app
           assert 'ela-flashcards-known' in cards
           assert 'localStorage' in cards
@@ -149,6 +155,7 @@ jobs:
           assert "openpronounce==0.4.0" in requirements
           backend_pronunciation = Path("backend/requirements-pronunciation.txt").read_text(encoding="utf-8")
           assert "openpronounce==0.4.0" in backend_pronunciation
+          assert "pronunciada==1.1.1" in backend_pronunciation
           assert "@spaces.GPU" in app
           assert "compare_audio_with_text" in app
           assert "demo.queue(default_concurrency_limit=1, max_size=10)" in app
