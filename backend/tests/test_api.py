@@ -413,6 +413,7 @@ def test_precise_pronunciation_endpoint_returns_word_level_contract(monkeypatch)
     expected = {
         "schema_version": 1,
         "engine": "Pronunciada 1.1.1",
+        "text": "",
         "score": 84.0,
         "score_probability": 0.84,
         "score_granularity": "sentence",
