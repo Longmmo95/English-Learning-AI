@@ -24,12 +24,12 @@ Repository state at start:
 
 ## Milestones
 
-### M0 — Safety and baseline audit (this commit)
+### M0 — Safety and baseline audit (complete)
 - Record repository state, existing features, CI evidence and non-negotiable safety rules.
 - Add CI trigger for this isolated work branch.
 - No production deployment and no change to the legacy site.
 
-### M1 — Pronunciation engine integration (next)
+### M1 — Pronunciation engine integration (in progress)
 - Add Pronunciada 1.1.1 as an optional backend engine, without silently replacing the existing OpenPronounce adapter.
 - Convert supported uploads to a bounded mono 16 kHz WAV before inference; retain file-size and duration preflight checks.
 - Return honest, schema-versioned sentence, word and phoneme probabilities, plus audio-quality warnings.
@@ -76,3 +76,19 @@ A milestone is complete only when:
 - Real microphone upload to the API requires an independently hosted HTTPS backend. A free local CPU deployment is possible for personal use, but public always-on hosting is not assumed to be free or available.
 - Pronunciada's own upstream benchmarks do not guarantee equivalent accuracy for every Vietnamese learner. Test with real learner recordings before describing it as reliable for this audience.
 - Pronunciada includes third-party model/data licensing obligations; retain upstream attribution and review its NOTICE/licensing files before redistribution.
+
+
+## Delivery update — 2026-11-28
+
+Implemented on `feature/pronunciada-integration`:
+- Added an isolated Pronunciada 1.1.1 adapter and separate `/precise-status` + `/analyze-precise` endpoints; the OpenPronounce endpoint remains available.
+- Added CPU INT8 scoring, 16 kHz mono WAV normalization, upload/duration checks, temporary-file cleanup, serialized inference and strict probability validation.
+- Connected the speaking UI to the precise endpoint and added sentence, word and phoneme feedback.
+- Added API contract tests, CI assertions, setup documentation and third-party notices.
+- The new branch has its own CI trigger. No Pages deployment, main-branch change, PR merge or legacy-site modification was made.
+
+Still required before M1 is complete:
+- Confirm the latest CI run succeeds on the final branch head, including Docker build/health test.
+- Test actual recorded speech (not only eSpeak synthetic audio), including quiet, noisy, clipped and Vietnamese-accented learner samples.
+- Verify backend CORS/HTTPS and model cache on the target host; no public backend is deployed.
+- Confirm the UI end-to-end against a running backend and real microphone permissions.
