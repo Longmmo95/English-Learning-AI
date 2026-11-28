@@ -157,11 +157,11 @@ function listening(){
 function normalizeWords(text){return text.toLocaleLowerCase("en-US").replace(/[^a-z0-9'\s]/g," ").trim().split(/\s+/).filter(Boolean)}
 function speaking(){
  const phrases=lessons.flatMap(l=>l.phrases.map(p=>({lesson:l.title,text:p[0],meaning:p[1]})));
- box.innerHTML='<h2>Luyện nói &amp; phát âm</h2><p class="muted">Có hai chế độ: đối chiếu chữ miễn phí bằng trình duyệt hoặc gửi bản ghi đến máy chủ OpenPronounce để phân tích âm thanh, âm vị IPA và từ cần luyện lại.</p>'+
+ box.innerHTML='<h2>Luyện nói &amp; phát âm</h2><p class="muted">Luyện nói có ba mức: nghe mẫu, đối chiếu chữ bằng trình duyệt và chấm âm thanh bằng Pronunciada (điểm câu, từng từ và từng âm vị). Chấm AI cần backend HTTPS riêng.</p>'+
  '<label for="speaking-phrase">Chọn câu luyện tập</label><select id="speaking-phrase" class="action">'+phrases.map((p,i)=>'<option value="'+i+'">'+p.lesson+' — '+p.text+'</option>').join("")+'</select>'+
- '<div class="word" id="speaking-target"></div><div class="flash-actions"><button class="action" id="speak-listen">🔊 Nghe câu mẫu</button><button class="action flash-reveal" id="speak-record">🎙 Ghi âm và chấm AI</button><button class="action" id="speak-browser-check">Đối chiếu chữ miễn phí</button></div>'+
+ '<div class="word" id="speaking-target"></div><div class="flash-actions"><button class="action" id="speak-listen">🔊 Nghe câu mẫu</button><button class="action flash-reveal" id="speak-record">🎙 Ghi âm và chấm AI theo từ</button><button class="action" id="speak-browser-check">Đối chiếu chữ miễn phí</button></div>'+
  '<div class="pronunciation-settings"><label for="pronunciation-api">Địa chỉ máy chủ AI (HTTPS)</label><input id="pronunciation-api" type="url" placeholder="https://ten-may-chu-cua-ban" autocomplete="url"><button class="action" id="save-pronunciation-api">Lưu địa chỉ máy chủ</button></div>'+
- '<p id="speech-status" class="muted" aria-live="polite">Cần kết nối backend OpenPronounce riêng. Bản GitHub Pages không tự chạy mô hình AI.</p><div id="speech-result" class="word hidden" aria-live="polite"></div><div id="ios-dictation" class="word hidden"><label for="dictation-text">Nhập bằng giọng nói trên bàn phím iPhone</label><input id="dictation-text" type="text" inputmode="text" autocomplete="off" placeholder="Chạm micro trên bàn phím và đọc câu tiếng Anh"><button class="action" id="compare-dictation" type="button">So sánh từng từ</button><small>Miễn phí. iPhone chuyển giọng nói thành chữ bằng tính năng đọc chính tả của iOS; website không tải bản ghi âm lên máy chủ.</small></div>'+
+ '<p id="speech-status" class="muted" aria-live="polite">Cần kết nối backend Pronunciada riêng. GitHub Pages không tự chạy mô hình AI.</p><div id="speech-result" class="word hidden" aria-live="polite"></div><div id="ios-dictation" class="word hidden"><label for="dictation-text">Nhập bằng giọng nói trên bàn phím iPhone</label><input id="dictation-text" type="text" inputmode="text" autocomplete="off" placeholder="Chạm micro trên bàn phím và đọc câu tiếng Anh"><button class="action" id="compare-dictation" type="button">So sánh từng từ</button><small>Miễn phí. iPhone chuyển giọng nói thành chữ bằng tính năng đọc chính tả của iOS; website không tải bản ghi âm lên máy chủ.</small></div>'+
  '<p class="muted">Bản ghi âm được gửi tới máy chủ bạn cấu hình. Giới hạn 12 MB. Điểm AI là ước lượng hỗ trợ luyện tập, có thể có sai số.</p>';
  const select=$("#speaking-phrase"),target=$("#speaking-target"),status=$("#speech-status"),result=$("#speech-result");
  const apiInput=$("#pronunciation-api"),recordButton=$("#speak-record");
@@ -173,7 +173,7 @@ function speaking(){
   discardRecording=true;recording=false;clearTimeout(recordingTimeout);recordingTimeout=null;
   if(recorder&&recorder.state!=="inactive")recorder.stop();
   if(stream)stream.getTracks().forEach(track=>track.stop());stream=null;chunks=[];
-  recordButton.disabled=false;recordButton.textContent="🎙 Ghi âm và chấm AI";recordButton.classList.remove("recording");
+  recordButton.disabled=false;recordButton.textContent="🎙 Ghi âm và chấm AI theo từ";recordButton.classList.remove("recording");
  };
  function current(){return phrases[Number(select.value)]}
  function safe(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
@@ -185,22 +185,29 @@ function speaking(){
    const confidence=typeof item.confidence==="number"&&Number.isFinite(item.confidence)&&item.confidence>=0&&item.confidence<=1?Math.round(item.confidence*100):null;
    return '<div class="pronunciation-error"><b>'+safe(item.word||"Từ cần luyện")+'</b><small>Mong đợi: /'+safe(item.expected||"—")+'/</small><small>Nhận diện: /'+safe(item.actual||"không nhận diện được")+'/</small>'+(confidence===null?"":'<small>Độ tin cậy phát hiện lỗi: '+confidence+'%</small>')+'</div>';
   }).join(""):'<p class="word-match">Không phát hiện lỗi âm vị đáng kể trong câu này. Hãy nghe lại để tự kiểm tra.</p>';
+  const wordScores=Array.isArray(data.words)?data.words.map(word=>{
+   const probability=typeof word.probability==="number"&&Number.isFinite(word.probability)&&word.probability>=0&&word.probability<=1?Math.round(word.probability*100):null;
+   if(probability===null)return "";
+   const phones=Array.isArray(word.phones)?word.phones.map(phone=>safe(phone.ipa)+" "+Math.round(phone.probability*100)+"%").join(" · "):"";
+   return '<div class="pronunciation-error"><b>'+safe(word.text)+'</b><small>Độ chính xác ước lượng: '+probability+'%</small>'+(phones?'<small>Âm vị: '+phones+'</small>':"")+'</div>';
+  }).join(""):"";
   result.innerHTML='<div class="pronunciation-score"><span>Điểm tổng câu (tham khảo)</span><strong>'+ score+'<small>/100</small></strong></div>'+
+   (wordScores?'<b>Điểm ước lượng theo từng từ:</b>'+wordScores:"")+
    '<b>Máy nhận diện được:</b><p>'+safe(data.transcribe||"Chưa có bản phiên âm.")+'</p>'+
    '<b>Những từ nên luyện lại:</b>'+errorHtml+
    '<p class="muted">WER: '+safe(diff.word_error_rate??"—")+' · Phoneme error rate: '+safe(diff.phoneme_error_rate??"—")+'</p>'+
    '<p class="muted">Điểm 0–100 áp dụng cho toàn câu. Độ tin cậy bên cạnh từng lỗi là độ tin cậy phát hiện lỗi của mô hình, không phải điểm số riêng của từ.</p>'+
-   '<p class="muted">Kết quả do mô hình âm thanh OpenPronounce tạo ra, không phải điểm do so khớp chữ trong trình duyệt.</p>';
+   '<p class="muted">Kết quả do mô hình âm thanh Pronunciada tạo ra. Xác suất là ước lượng, không phải điểm thi hoặc chứng nhận trình độ.</p>';
   result.classList.remove("hidden");markStudyDay();
  }
  async function submitRecording(blob){
   const base=apiBase();
   if(!base){status.textContent="Bạn chưa nhập địa chỉ backend. Hãy nhập URL HTTPS của máy chủ OpenPronounce rồi lưu.";return}
   result.classList.add("hidden");result.replaceChildren();const form=new FormData();const mime=(blob.type||"").toLowerCase();const extension=mime.includes("ogg")?"ogg":mime.includes("wav")?"wav":mime.includes("mp4")?"m4a":"webm";form.append("file",blob,"practice."+extension);form.append("expected_text",current().text);
-  status.textContent="Đang tải bản ghi và phân tích âm vị. Lần đầu máy chủ có thể cần tải mô hình nên sẽ mất thời gian.";
+  status.textContent="Đang tải bản ghi và chấm từng từ/âm vị. Lần đầu máy chủ có thể cần tải mô hình INT8 nên sẽ mất thời gian.";
   recordButton.disabled=true;
   try{
-   const response=await fetch(base+"/api/v1/pronunciation/analyze",{method:"POST",body:form});
+   const response=await fetch(base+"/api/v1/pronunciation/analyze-precise",{method:"POST",body:form});
    const payload=await response.json().catch(()=>({}));
    if(!response.ok)throw new Error(payload.detail||("Máy chủ trả về lỗi "+response.status));
    renderAnalysis(payload);status.textContent="Đã phân tích xong. Nghe lại câu mẫu và thử thêm lần nữa nhé.";
@@ -262,12 +269,12 @@ function speaking(){
    if(url.protocol!=="https:"&&url.hostname!=="localhost"&&url.hostname!=="127.0.0.1"){status.textContent="Vui lòng dùng HTTPS cho máy chủ công khai; HTTP chỉ được phép trên localhost.";return}
    localStorage.setItem(apiKey,url.origin+url.pathname.replace(/\/+$/,""));
    status.textContent="Đã lưu địa chỉ. Đang kiểm tra trạng thái engine…";
-   const response=await fetch(apiBase()+"/api/v1/pronunciation/status");
+   const response=await fetch(apiBase()+"/api/v1/pronunciation/precise-status");
    const state=await response.json();
    if(state.package_installed){
-    status.textContent=(state.engine||"Engine")+" đã được cài, nhưng trạng thái này chưa xác minh model weights hoặc suy luận thật. "+(state.message||"");
+    status.textContent=(state.engine||"Pronunciada")+" đã được cài, nhưng trạng thái này chưa xác minh model weights hoặc suy luận thật. "+(state.message||"");
    }else{
-    status.textContent="Đã tới backend nhưng engine chưa được cài: "+(state.message||"");
+    status.textContent="Đã tới backend nhưng Pronunciada chưa được cài: "+(state.message||"");
    }
   }catch(error){status.textContent="Không thể kết nối backend: "+error.message+". Kiểm tra URL và cấu hình CORS."}
  };
